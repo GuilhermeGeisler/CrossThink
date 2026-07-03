@@ -1,0 +1,14 @@
+# Name,   Type, SubType, Offset,  Size, Flags
+# Ampliado de 6.25MB -> 7.5MB por slot, reaproveitando a partição `spiffs`
+# (não utilizada: assets web ficam em PROGMEM, livros ficam no SD — mesma
+# solução aplicada pelo CrumBLE v3.0.0 pra caber BLE + Coleções). Necessário
+# porque este build soma BLE + Dicionário + Coleções + Stats/Séries/Pet +
+# fontes extras + codecs de imagem em cima da base já carregada de jogos.
+# ATENÇÃO: isso muda a tabela de partições — migrar de um build com slots de
+# 6.25MB exige um reflash único via cabo/SD (OTA não consegue reparticionar).
+nvs,      data, nvs,     0x9000,  0x5000,
+otadata,  data, ota,     0xe000,  0x2000,
+app0,     app,  ota_0,   0x10000, 0x780000,
+app1,     app,  ota_1,   0x790000,0x780000,
+spiffs,   data, spiffs,  0xF10000,0xE0000,
+coredump, data, coredump,0xFF0000,0x10000,
