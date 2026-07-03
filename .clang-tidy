@@ -1,0 +1,428 @@
+# Clang-Tidy Configuration for CrossThink (ESP32-C3 Firmware)
+# Focus: Memory safety, performance, embedded constraints
+#
+# Documentation: https://clang.llvm.org/extra/clang-tidy/checks/list.html
+
+---
+Checks: >
+  -*,
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  hicpp-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-magic-numbers,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length,
+  -cppcoreguidelines-pro-type-vararg,
+  -hicpp-vararg,
+  -cppcoreguidelines-avoid-c-arrays,
+  -hicpp-avoid-c-arrays,
+  -modernize-avoid-c-arrays,
+  -readability-else-after-return,
+  -cppcoreguidelines-special-member-functions,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -misc-non-private-member-variables-in-classes,
+  -readability-function-cognitive-complexity,
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-owning-memory,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+  -readability-function-size,
+  -modernize-use-nodiscard,
+  -misc-no-recursion,
+  -bugprone-narrowing-conversions,
+  -cppcoreguidelines-narrowing-conversions,
+  -performance-no-int-to-ptr,
+  -bugprone-branch-clone,
+  -readability-redundant-access-specifiers,
+  -modernize-return-braced-init-list,
+  -readability-implicit-bool-conversion,
+  -bugprone-parent-virtual-call,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -hicpp-no-array-decay,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -hicpp-signed-bitwise,
+  -bugprone-suspicious-include,
+  -cert-err33-c,
+  -misc-include-cleaner,
+  -bugprone-unchecked-optional-access,
+  -readability-container-data-pointer,
+  -modernize-use-auto,
+  -readability-qualified-auto,
+  -modernize-use-using,
+  -cppcoreguidelines-macro-usage,
+  -bugprone-exception-escape,
+  -cppcoreguidelines-no-malloc,
+  -hicpp-no-malloc,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-const-cast,
+  -cppcoreguidelines-pro-type-cstyle-cast,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-interfaces-global-init,
+  -cppcoreguidelines-macro-to-enum,
+  -misc-const-correctness,
+  -performance-unnecessary-value-param,
+  -readability-convert-member-functions-to-static,
+  -readability-make-member-function-const,
+  -readability-operators-representation,
+  -readability-use-anyofallof,
+  -modernize-use-default-member-init,
+  -modernize-use-override,
+  -modernize-use-equals-default,
+  -modernize-use-equals-delete,
+  -modernize-use-noexcept,
+  -modernize-use-transparent-functors,
+  -modernize-concat-nested-namespaces,
+  -modernize-deprecated-headers,
+  -modernize-redundant-void-arg,
+  -modernize-shrink-to-fit,
+  -modernize-unary-static-assert,
+  -modernize-loop-convert,
+  -modernize-raw-string-literal,
+  -modernize-pass-by-value,
+  -modernize-use-bool-literals,
+  -modernize-use-emplace,
+  -modernize-use-nullptr,
+  -modernize-use-override,
+  -performance-faster-string-find,
+  -performance-for-range-copy,
+  -performance-implicit-conversion-in-loop,
+  -performance-inefficient-algorithm,
+  -performance-inefficient-string-concatenation,
+  -performance-inefficient-vector-operation,
+  -performance-move-const-arg,
+  -performance-move-constructor-init,
+  -performance-no-automatic-move,
+  -performance-noexcept-move-constructor,
+  -performance-type-promotion-in-math-fn,
+  -performance-unnecessary-copy-initialization,
+  -bugprone-argument-comment,
+  -bugprone-assert-side-effect,
+  -bugprone-bad-signal-to-kill-thread,
+  -bugprone-bool-pointer-implicit-conversion,
+  -bugprone-copy-constructor-init,
+  -bugprone-dangling-handle,
+  -bugprone-dynamic-static-initializers,
+  -bugprone-fold-init-type,
+  -bugprone-forward-declaration-namespace,
+  -bugprone-forwarding-reference-overload,
+  -bugprone-inaccurate-erase,
+  -bugprone-incorrect-roundings,
+  -bugprone-integer-division,
+  -bugprone-lambda-function-name,
+  -bugprone-macro-parentheses,
+  -bugprone-macro-repeated-side-effects,
+  -bugprone-misplaced-operator-in-strlen-in-expr,
+  -bugprone-misplaced-pointer-arithmetic-in-alloc,
+  -bugprone-misplaced-widening-cast,
+  -bugprone-move-forwarding-reference,
+  -bugprone-multiple-statement-macro,
+  -bugprone-no-escape,
+  -bugprone-not-null-terminated-result,
+  -bugprone-reserved-identifier,
+  -bugprone-signed-char-misuse,
+  -bugprone-sizeof-container,
+  -bugprone-sizeof-expression,
+  -bugprone-spuriously-wake-up-functions,
+  -bugprone-string-constructor,
+  -bugprone-string-integer-assignment,
+  -bugprone-string-literal-with-embedded-nul,
+  -bugprone-stringview-nullptr,
+  -bugprone-suspicious-enum-usage,
+  -bugprone-suspicious-include,
+  -bugprone-suspicious-memory-comparison,
+  -bugprone-suspicious-memset-usage,
+  -bugprone-suspicious-missing-comma,
+  -bugprone-suspicious-semicolon,
+  -bugprone-suspicious-string-compare,
+  -bugprone-swapped-arguments,
+  -bugprone-terminating-continue,
+  -bugprone-throw-keyword-missing,
+  -bugprone-too-small-loop-variable,
+  -bugprone-undefined-memory-manipulation,
+  -bugprone-undelegated-constructor,
+  -bugprone-unhandled-exception-at-new,
+  -bugprone-unhandled-self-assignment,
+  -bugprone-unique-ptr-array-mismatch,
+  -bugprone-unsafe-functions,
+  -bugprone-unused-raii,
+  -bugprone-unused-return-value,
+  -bugprone-use-after-move,
+  -bugprone-virtual-near-miss,
+  -cert-con36-c,
+  -cert-con54-cpp,
+  -cert-dcl03-c,
+  -cert-dcl16-c,
+  -cert-dcl21-cpp,
+  -cert-dcl37-c,
+  -cert-dcl50-cpp,
+  -cert-dcl51-cpp,
+  -cert-dcl54-cpp,
+  -cert-dcl58-cpp,
+  -cert-dcl59-cpp,
+  -cert-env33-c,
+  -cert-err09-cpp,
+  -cert-err34-c,
+  -cert-err52-cpp,
+  -cert-err58-cpp,
+  -cert-err60-cpp,
+  -cert-err61-cpp,
+  -cert-exp42-c,
+  -cert-fio38-c,
+  -cert-flp30-c,
+  -cert-flp37-c,
+  -cert-mem57-cpp,
+  -cert-msc30-c,
+  -cert-msc32-c,
+  -cert-msc50-cpp,
+  -cert-msc51-cpp,
+  -cert-oop11-cpp,
+  -cert-oop54-cpp,
+  -cert-oop57-cpp,
+  -cert-oop58-cpp,
+  -cert-pos44-c,
+  -cert-pos47-c,
+  -cert-sig30-c,
+  -cert-str34-c,
+  -clang-analyzer-core.CallAndMessage,
+  -clang-analyzer-core.DivideZero,
+  -clang-analyzer-core.DynamicTypePropagation,
+  -clang-analyzer-core.NonNullParamChecker,
+  -clang-analyzer-core.NullDereference,
+  -clang-analyzer-core.StackAddressEscape,
+  -clang-analyzer-core.UndefinedBinaryOperatorResult,
+  -clang-analyzer-core.VLASize,
+  -clang-analyzer-core.uninitialized.ArraySubscript,
+  -clang-analyzer-core.uninitialized.Assign,
+  -clang-analyzer-core.uninitialized.Branch,
+  -clang-analyzer-core.uninitialized.CapturedBlockVariable,
+  -clang-analyzer-core.uninitialized.UndefReturn,
+  -clang-analyzer-cplusplus.InnerPointer,
+  -clang-analyzer-cplusplus.Move,
+  -clang-analyzer-cplusplus.NewDelete,
+  -clang-analyzer-cplusplus.NewDeleteLeaks,
+  -clang-analyzer-deadcode.DeadStores,
+  -clang-analyzer-nullability.NullPassedToNonnull,
+  -clang-analyzer-nullability.NullReturnedFromNonnull,
+  -clang-analyzer-nullability.NullableDereferenced,
+  -clang-analyzer-nullability.NullablePassedToNonnull,
+  -clang-analyzer-nullability.NullableReturnedFromNonnull,
+  -clang-analyzer-optin.cplusplus.UninitializedObject,
+  -clang-analyzer-optin.cplusplus.VirtualCall,
+  -clang-analyzer-optin.performance.GCDAntipattern,
+  -clang-analyzer-optin.performance.Padding,
+  -clang-analyzer-optin.portability.UnixAPI,
+  -clang-analyzer-security.FloatLoopCounter,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  -clang-analyzer-security.insecureAPI.UncheckedReturn,
+  -clang-analyzer-security.insecureAPI.bcmp,
+  -clang-analyzer-security.insecureAPI.bcopy,
+  -clang-analyzer-security.insecureAPI.bzero,
+  -clang-analyzer-security.insecureAPI.getpw,
+  -clang-analyzer-security.insecureAPI.gets,
+  -clang-analyzer-security.insecureAPI.mkstemp,
+  -clang-analyzer-security.insecureAPI.mktemp,
+  -clang-analyzer-security.insecureAPI.rand,
+  -clang-analyzer-security.insecureAPI.strcpy,
+  -clang-analyzer-security.insecureAPI.vfork,
+  -clang-analyzer-unix.API,
+  -clang-analyzer-unix.Malloc,
+  -clang-analyzer-unix.MallocSizeof,
+  -clang-analyzer-unix.MismatchedDeallocator,
+  -clang-analyzer-unix.Vfork,
+  -clang-analyzer-unix.cstring.BadSizeArg,
+  -clang-analyzer-unix.cstring.NullArg,
+  -clang-analyzer-valist.CopyToSelf,
+  -clang-analyzer-valist.Uninitialized,
+  -clang-analyzer-valist.Unterminated,
+  -concurrency-mt-unsafe,
+  -concurrency-thread-canceltype-asynchronous,
+  -cppcoreguidelines-avoid-capturing-lambda-coroutines,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-avoid-do-while,
+  -cppcoreguidelines-avoid-goto,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-avoid-reference-coroutine-parameters,
+  -cppcoreguidelines-c-copy-assignment-signature,
+  -cppcoreguidelines-explicit-virtual-functions,
+  -cppcoreguidelines-init-variables,
+  -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-no-suspend-with-lock,
+  -cppcoreguidelines-prefer-member-initializer,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-type-member-init,
+  -cppcoreguidelines-pro-type-static-cast-downcast,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-rvalue-reference-param-not-moved,
+  -cppcoreguidelines-slicing,
+  -cppcoreguidelines-special-member-functions,
+  -cppcoreguidelines-virtual-class-destructor,
+  -hicpp-exception-baseclass,
+  -hicpp-explicit-conversions,
+  -hicpp-function-size,
+  -hicpp-invalid-access-moved,
+  -hicpp-member-init,
+  -hicpp-move-const-arg,
+  -hicpp-multiway-paths-covered,
+  -hicpp-named-parameter,
+  -hicpp-new-delete-operators,
+  -hicpp-no-assembler,
+  -hicpp-noexcept-move,
+  -hicpp-special-member-functions,
+  -hicpp-static-assert,
+  -hicpp-use-auto,
+  -hicpp-use-emplace,
+  -hicpp-use-equals-default,
+  -hicpp-use-equals-delete,
+  -hicpp-use-noexcept,
+  -hicpp-use-nullptr,
+  -hicpp-use-override,
+  -misc-definitions-in-headers,
+  -misc-misleading-bidirectional,
+  -misc-misleading-identifier,
+  -misc-misplaced-const,
+  -misc-new-delete-overloads,
+  -misc-non-copyable,
+  -misc-redundant-expression,
+  -misc-static-assert,
+  -misc-throw-by-value-catch-by-reference,
+  -misc-unconventional-assign-operator,
+  -misc-uniqueptr-reset-release,
+  -misc-unused-alias-decls,
+  -misc-unused-parameters,
+  -misc-unused-using-decls,
+  -misc-use-anonymous-namespace,
+  -modernize-avoid-bind,
+  -modernize-macro-to-enum,
+  -modernize-replace-auto-ptr,
+  -modernize-replace-disallow-copy-and-assign-macro,
+  -modernize-replace-random-shuffle,
+  -modernize-use-std-format,
+  -modernize-use-std-print,
+  -performance-avoid-endl,
+  -performance-enum-size,
+  -performance-noexcept-destructor,
+  -performance-noexcept-swap,
+  -readability-avoid-const-params-in-decls,
+  -readability-avoid-nested-conditional-operator,
+  -readability-avoid-return-with-void-value,
+  -readability-avoid-unconditional-preprocessor-if,
+  -readability-braces-around-statements,
+  -readability-const-return-type,
+  -readability-container-contains,
+  -readability-container-size-empty,
+  -readability-data-pointer,
+  -readability-delete-null-pointer,
+  -readability-duplicate-include,
+  -readability-enum-initial-value,
+  -readability-identifier-naming,
+  -readability-inconsistent-declaration-parameter-name,
+  -readability-isolate-declaration,
+  -readability-misleading-indentation,
+  -readability-misplaced-array-index,
+  -readability-named-parameter,
+  -readability-non-const-parameter,
+  -readability-redundant-control-flow,
+  -readability-redundant-declaration,
+  -readability-redundant-member-init,
+  -readability-redundant-preprocessor,
+  -readability-redundant-smartptr-get,
+  -readability-redundant-string-cstr,
+  -readability-redundant-string-init,
+  -readability-reference-to-constructed-temporary,
+  -readability-simplify-boolean-expr,
+  -readability-simplify-subscript-expr,
+  -readability-static-accessed-through-instance,
+  -readability-static-definition-in-anonymous-namespace,
+  -readability-string-compare,
+  -readability-suspicious-call-argument,
+  -readability-uniqueptr-delete-release,
+  -readability-uppercase-literal-suffix,
+  -readability-use-anyofallof
+
+WarningsAsErrors: ''
+
+HeaderFilterRegex: '.*'
+
+AnalyzeTemporaryDtors: false
+
+FormatStyle: file
+
+CheckOptions:
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+  - key: readability-identifier-naming.VariableCase
+    value: camelBack
+  - key: readability-identifier-naming.ParameterCase
+    value: camelBack
+  - key: readability-identifier-naming.MemberCase
+    value: camelBack
+  - key: readability-identifier-naming.PrivateMemberSuffix
+    value: ''
+  - key: readability-identifier-naming.ProtectedMemberSuffix
+    value: ''
+  - key: readability-identifier-naming.PublicMemberSuffix
+    value: ''
+  - key: readability-identifier-naming.ConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.ConstantPrefix
+    value: 'k'
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+  - key: readability-identifier-naming.EnumConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower-case
+  - key: readability-identifier-naming.MacroDefinitionCase
+    value: UPPER_CASE
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: CamelCase
+  - key: readability-identifier-naming.GlobalConstantPrefix
+    value: 'k'
+  - key: readability-identifier-naming.GlobalVariableCase
+    value: lower-case
+  - key: readability-identifier-naming.LocalVariableCase
+    value: camelBack
+  - key: readability-identifier-naming.StructCase
+    value: CamelCase
+  - key: readability-identifier-naming.TemplateParameterCase
+    value: CamelCase
+  - key: readability-identifier-naming.TypeAliasCase
+    value: CamelCase
+  - key: readability-identifier-naming.TypedefCase
+    value: CamelCase
+  - key: readability-identifier-naming.UnionCase
+    value: CamelCase
+  - key: readability-identifier-naming.ValueTemplateParameterCase
+    value: CamelCase
+  - key: readability-function-size.LineThreshold
+    value: 200
+  - key: readability-function-size.ParameterThreshold
+    value: 8
+  - key: readability-function-size.NestingThreshold
+    value: 6
+  - key: readability-function-size.VariableThreshold
+    value: 15
+  - key: readability-function-cognitive-complexity.Threshold
+    value: 50
+  - key: bugprone-sizeof-expression.Threshold
+    value: 100
+  - key: modernize-use-nullptr.NullMacros
+    value: 'NULL'
+  - key: performance-move-const-arg.CheckTriviallyCopyableMove
+    value: false
+  - key: performance-unnecessary-value-param.AllowedTypes
+    value: 'std::unique_ptr;std::shared_ptr;std::function'
+  - key: bugprone-unused-return-value.CheckedFunctions
+    value: '::std::async;::std::launder;::std::remove;::std::remove_if;::std::unique;::std::unique_ptr::release;::std::basic_string::empty;::std::vector::empty;::std::back_inserter;::std::distance;::std::find;::std::find_if;::std::inserter;::std::lower_bound;::std::make_pair;::std::map::count;::std::map::find;::std::map::lower_bound;::std::multimap::equal_range;::std::multimap::upper_bound;::std::set::count;::std::set::find;::std::setfill;::std::setprecision;::std::setw;::std::streamsize;::std::upper_bound'
