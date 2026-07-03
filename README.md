@@ -4,7 +4,7 @@
 
 CrossThink é um firmware open-source para e-readers baseados em ESP32-C3 (Xteink X4/X3), resultado da unificação de múltiplos forks do projeto CrossPoint Reader. Combina a experiência de leitura robusta do CrossPoint com ferramentas complementares, jogos leves e funcionalidades de produtividade — tudo otimizado para as restrições de hardware (380KB RAM, CPU single-core, display E-Ink 800x480).
 
-![CrossPoint Reader](./docs/images/cover.jpg)
+<!-- ![CrossPoint Reader](./docs/images/cover.jpg)-->
 
 ## 🎯 Visão do Projeto
 
