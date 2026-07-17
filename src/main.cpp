@@ -35,7 +35,7 @@
 #include "util/ScreenshotUtil.h"
 
 GfxRenderer renderer(display);
-MappedInputManager mappedInputManager(gpio, renderer);
+MappedInputManager mappedInputManager(gpio);
 ActivityManager activityManager(renderer, mappedInputManager);
 FontDecompressor fontDecompressor;
 SdCardFontSystem sdFontSystem;

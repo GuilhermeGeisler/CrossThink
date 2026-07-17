@@ -48,7 +48,7 @@ versões do CrossPoint, etc.)
 
 ## O que falta (módulos complexos) — ver `MERGE_PLAN.md`
 
-❌ BLE (page-turner) — do CrumBLE
+❌ BLE (page-turner) — do CrumBLE (remover)
 ❌ Dicionário StarDict — do CrumBLE
 ❌ Coleções + Bookshelf — do CrumBLE
 ❌ Otimizador de EPUB — do CrumBLE

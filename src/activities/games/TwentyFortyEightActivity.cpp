@@ -2,9 +2,10 @@
 
 #include <GfxRenderer.h>
 #include <I18n.h>
+#include <esp_random.h>
+
 #include <cstdio>
 #include <cstring>
-#include <esp_random.h>
 
 #include "GameScores.h"
 #include "components/UITheme.h"
@@ -121,7 +122,7 @@ void TwentyFortyEightActivity::spawnTile() {
 bool TwentyFortyEightActivity::hasMovesLeft() const {
   for (int r = 0; r < SIZE; r++) {
     for (int c = 0; c < SIZE; c++) {
-      if (!grid[r][c]) return true;                              // empty cell
+      if (!grid[r][c]) return true;                                   // empty cell
       if (c + 1 < SIZE && grid[r][c] == grid[r][c + 1]) return true;  // horizontal merge
       if (r + 1 < SIZE && grid[r][c] == grid[r + 1][c]) return true;  // vertical merge
     }
@@ -162,10 +163,14 @@ void TwentyFortyEightActivity::loop() {
   if (gameOver) return;
 
   bool moved = false;
-  if (mappedInput.wasReleased(MappedInputManager::Button::Left))       moved = slideLeft();
-  else if (mappedInput.wasReleased(MappedInputManager::Button::Right)) moved = slideRight();
-  else if (mappedInput.wasReleased(MappedInputManager::Button::Up))    moved = slideUp();
-  else if (mappedInput.wasReleased(MappedInputManager::Button::Down))  moved = slideDown();
+  if (mappedInput.wasReleased(MappedInputManager::Button::Left))
+    moved = slideLeft();
+  else if (mappedInput.wasReleased(MappedInputManager::Button::Right))
+    moved = slideRight();
+  else if (mappedInput.wasReleased(MappedInputManager::Button::Up))
+    moved = slideUp();
+  else if (mappedInput.wasReleased(MappedInputManager::Button::Down))
+    moved = slideDown();
 
   if (moved) {
     spawnTile();
@@ -190,8 +195,7 @@ void TwentyFortyEightActivity::render(RenderLock&&) {
   renderer.clearScreen();
 
   // Header
-  GUI.drawHeader(renderer, Rect{0, metrics.topPadding, pageWidth, metrics.headerHeight},
-                 tr(STR_2048));
+  GUI.drawHeader(renderer, Rect{0, metrics.topPadding, pageWidth, metrics.headerHeight}, tr(STR_2048));
 
   // Score + best score on one line
   char scoreStr[48];
@@ -264,10 +268,7 @@ void TwentyFortyEightActivity::render(RenderLock&&) {
           renderer.fillRect(tx - 2, ty - 1, textW + 4, lineH + 2, false);
           renderer.drawText(fontId, tx, ty, buf);
         } else {
-          renderer.drawText(fontId,
-                            x + (TILE - textW) / 2,
-                            y + (TILE - lineH) / 2,
-                            buf);
+          renderer.drawText(fontId, x + (TILE - textW) / 2, y + (TILE - lineH) / 2, buf);
         }
       }
     }

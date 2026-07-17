@@ -3,21 +3,21 @@
 #include <GfxRenderer.h>
 #include <I18n.h>
 
-#include "../games/ClockActivity.h"
-#include "../games/PomodoroActivity.h"
-#include "../games/TwentyFortyEightActivity.h"
-#include "../games/MinesweeperActivity.h"
-#include "../games/SudokuActivity.h"
+#include "../flashcard/FlashcardDeckListActivity.h"
 #include "../games/CaroActivity.h"
 #include "../games/ChessActivity.h"
+#include "../games/ClockActivity.h"
+#include "../games/MinesweeperActivity.h"
+#include "../games/PomodoroActivity.h"
+#include "../games/SudokuActivity.h"
+#include "../games/TwentyFortyEightActivity.h"
 #include "../games/wordle/WordleActivity.h"
-#include "utils/CalculatorActivity.h"
-#include "utils/UnitConverterActivity.h"
-#include "../flashcard/FlashcardDeckListActivity.h"
-#include "components/UITheme.h"
 #include "CrossPetSettings.h"
 #include "CrossPointSettings.h"
+#include "components/UITheme.h"
 #include "fontIds.h"
+#include "utils/CalculatorActivity.h"
+#include "utils/UnitConverterActivity.h"
 
 void ToolsActivity::buildMenu() {
   menuEntries.clear();
@@ -25,48 +25,48 @@ void ToolsActivity::buildMenu() {
   // --- Utilities ---
   if (PET_SETTINGS.appClock)
     menuEntries.push_back({StrId::STR_CLOCK, [this] {
-      activityManager.pushActivity(std::make_unique<ClockActivity>(renderer, mappedInput));
-    }});
+                             activityManager.pushActivity(std::make_unique<ClockActivity>(renderer, mappedInput));
+                           }});
   if (PET_SETTINGS.appPomodoro)
     menuEntries.push_back({StrId::STR_POMODORO, [this] {
-      activityManager.pushActivity(std::make_unique<PomodoroActivity>(renderer, mappedInput));
-    }});
+                             activityManager.pushActivity(std::make_unique<PomodoroActivity>(renderer, mappedInput));
+                           }});
   // Calculator / Unit Converter reuse the appGames toggle's neighbor slot;
   // give them their own toggles if you want independent visibility control
   // (see MERGE_PLAN.md — extend CrossPetSettings with appCalculator / appUnitConverter).
   menuEntries.push_back({StrId::STR_CALCULATOR, [this] {
-    activityManager.pushActivity(std::make_unique<CalculatorActivity>(renderer, mappedInput));
-  }});
+                           activityManager.pushActivity(std::make_unique<CalculatorActivity>(renderer, mappedInput));
+                         }});
   menuEntries.push_back({StrId::STR_UNIT_CONVERTER, [this] {
-    activityManager.pushActivity(std::make_unique<UnitConverterActivity>(renderer, mappedInput));
-  }});
+                           activityManager.pushActivity(std::make_unique<UnitConverterActivity>(renderer, mappedInput));
+                         }});
 
   // --- Study ---
   if (PET_SETTINGS.appFlashcard)
-    menuEntries.push_back({StrId::STR_FLASHCARD, [this] {
-      activityManager.pushActivity(std::make_unique<FlashcardDeckListActivity>(renderer, mappedInput));
-    }});
+    menuEntries.push_back(
+        {StrId::STR_FLASHCARD,
+         [this] { activityManager.pushActivity(std::make_unique<FlashcardDeckListActivity>(renderer, mappedInput)); }});
 
   // --- Games ---
   if (PET_SETTINGS.appGames) {
     menuEntries.push_back({StrId::STR_CHESS, [this] {
-      activityManager.pushActivity(std::make_unique<ChessActivity>(renderer, mappedInput));
-    }});
+                             activityManager.pushActivity(std::make_unique<ChessActivity>(renderer, mappedInput));
+                           }});
     menuEntries.push_back({StrId::STR_CARO, [this] {
-      activityManager.pushActivity(std::make_unique<CaroActivity>(renderer, mappedInput));
-    }});
+                             activityManager.pushActivity(std::make_unique<CaroActivity>(renderer, mappedInput));
+                           }});
     menuEntries.push_back({StrId::STR_SUDOKU, [this] {
-      activityManager.pushActivity(std::make_unique<SudokuActivity>(renderer, mappedInput));
-    }});
+                             activityManager.pushActivity(std::make_unique<SudokuActivity>(renderer, mappedInput));
+                           }});
     menuEntries.push_back({StrId::STR_MINESWEEPER, [this] {
-      activityManager.pushActivity(std::make_unique<MinesweeperActivity>(renderer, mappedInput));
-    }});
-    menuEntries.push_back({StrId::STR_2048, [this] {
-      activityManager.pushActivity(std::make_unique<TwentyFortyEightActivity>(renderer, mappedInput));
-    }});
+                             activityManager.pushActivity(std::make_unique<MinesweeperActivity>(renderer, mappedInput));
+                           }});
+    menuEntries.push_back(
+        {StrId::STR_2048,
+         [this] { activityManager.pushActivity(std::make_unique<TwentyFortyEightActivity>(renderer, mappedInput)); }});
     menuEntries.push_back({StrId::STR_WORDLE, [this] {
-      activityManager.pushActivity(std::make_unique<WordleActivity>(renderer, mappedInput));
-    }});
+                             activityManager.pushActivity(std::make_unique<WordleActivity>(renderer, mappedInput));
+                           }});
   }
 }
 
@@ -115,9 +115,7 @@ void ToolsActivity::render(RenderLock&&) {
   const int menuHeight = pageHeight - menuTop - metrics.buttonHintsHeight - metrics.verticalSpacing;
 
   GUI.drawList(renderer, Rect{0, menuTop, pageWidth, menuHeight}, menuCount, selectorIndex,
-               [this](int index) -> std::string {
-                 return I18N.get(menuEntries[index].labelId);
-               });
+               [this](int index) -> std::string { return I18N.get(menuEntries[index].labelId); });
 
   const auto labels = mappedInput.mapLabels("", tr(STR_SELECT), tr(STR_DIR_UP), tr(STR_DIR_DOWN));
   GUI.drawButtonHints(renderer, labels.btn1, labels.btn2, labels.btn3, labels.btn4);

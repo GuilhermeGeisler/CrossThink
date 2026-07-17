@@ -7,9 +7,7 @@
 // Initialize static singleton instance
 CrossPetSettings CrossPetSettings::instance;
 
-CrossPetSettings& CrossPetSettings::getInstance() {
-  return instance;
-}
+CrossPetSettings& CrossPetSettings::getInstance() { return instance; }
 
 bool CrossPetSettings::saveToFile() const {
   Storage.mkdir("/.crosspoint");

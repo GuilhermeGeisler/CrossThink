@@ -26,8 +26,7 @@ int CaroActivity::countDirection(int row, int col, int dr, int dc, uint8_t playe
 bool CaroActivity::checkWin(int row, int col, uint8_t player) const {
   static constexpr int dirs[][2] = {{0, 1}, {1, 0}, {1, 1}, {1, -1}};
   for (const auto& d : dirs) {
-    int total = 1 + countDirection(row, col, d[0], d[1], player) +
-                countDirection(row, col, -d[0], -d[1], player);
+    int total = 1 + countDirection(row, col, d[0], d[1], player) + countDirection(row, col, -d[0], -d[1], player);
     if (total >= 5) return true;
   }
   return false;
@@ -39,12 +38,15 @@ int CaroActivity::scorePosition(int row, int col, uint8_t player) const {
   static constexpr int dirs[][2] = {{0, 1}, {1, 0}, {1, 1}, {1, -1}};
   int totalScore = 0;
   for (const auto& d : dirs) {
-    int count = 1 + countDirection(row, col, d[0], d[1], player) +
-                countDirection(row, col, -d[0], -d[1], player);
-    if (count >= 5) totalScore += 100000;
-    else if (count == 4) totalScore += 10000;
-    else if (count == 3) totalScore += 1000;
-    else if (count == 2) totalScore += 100;
+    int count = 1 + countDirection(row, col, d[0], d[1], player) + countDirection(row, col, -d[0], -d[1], player);
+    if (count >= 5)
+      totalScore += 100000;
+    else if (count == 4)
+      totalScore += 10000;
+    else if (count == 3)
+      totalScore += 1000;
+    else if (count == 2)
+      totalScore += 100;
   }
   // Bonus for center proximity
   int centerDist = abs(row - SIZE / 2) + abs(col - SIZE / 2);
@@ -53,7 +55,6 @@ int CaroActivity::scorePosition(int row, int col, uint8_t player) const {
 }
 
 void CaroActivity::doAiMove() {
-
   if (difficulty == Difficulty::EASY) {
     // Random empty cell, biased toward center area
     int bestR = -1, bestC = -1, bestDist = SIZE * 2;
@@ -64,7 +65,9 @@ void CaroActivity::doAiMove() {
       if (grid[r][c] == 0) {
         int dist = abs(r - SIZE / 2) + abs(c - SIZE / 2);
         if (bestR < 0 || dist < bestDist) {
-          bestR = r; bestC = c; bestDist = dist;
+          bestR = r;
+          bestC = c;
+          bestDist = dist;
         }
         if (attempts > 20) break;
       }
@@ -74,13 +77,25 @@ void CaroActivity::doAiMove() {
     if (bestR < 0) {
       for (int r = 0; r < SIZE && bestR < 0; r++)
         for (int c = 0; c < SIZE && bestR < 0; c++)
-          if (grid[r][c] == 0) { bestR = r; bestC = c; }
+          if (grid[r][c] == 0) {
+            bestR = r;
+            bestC = c;
+          }
     }
-    if (bestR < 0) { gameOver = true; winner = 0; return; }
+    if (bestR < 0) {
+      gameOver = true;
+      winner = 0;
+      return;
+    }
     grid[bestR][bestC] = 2;
     moveCount++;
-    if (checkWin(bestR, bestC, 2)) { gameOver = true; winner = 2; }
-    else if (moveCount >= SIZE * SIZE) { gameOver = true; winner = 0; }
+    if (checkWin(bestR, bestC, 2)) {
+      gameOver = true;
+      winner = 2;
+    } else if (moveCount >= SIZE * SIZE) {
+      gameOver = true;
+      winner = 0;
+    }
     return;
   }
 
@@ -97,8 +112,7 @@ void CaroActivity::doAiMove() {
       for (int dr = -2; dr <= 2 && !hasNeighbor; dr++)
         for (int dc = -2; dc <= 2 && !hasNeighbor; dc++) {
           int nr = r + dr, nc = c + dc;
-          if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && grid[nr][nc] != 0)
-            hasNeighbor = true;
+          if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE && grid[nr][nc] != 0) hasNeighbor = true;
         }
       if (!hasNeighbor && moveCount > 0) continue;
 
@@ -130,16 +144,24 @@ void CaroActivity::doAiMove() {
   if (bestR >= 0) {
     grid[bestR][bestC] = 2;
     moveCount++;
-    if (checkWin(bestR, bestC, 2)) { gameOver = true; winner = 2; }
-    else if (moveCount >= SIZE * SIZE) { gameOver = true; winner = 0; }
+    if (checkWin(bestR, bestC, 2)) {
+      gameOver = true;
+      winner = 2;
+    } else if (moveCount >= SIZE * SIZE) {
+      gameOver = true;
+      winner = 0;
+    }
   }
 }
 
 const char* CaroActivity::difficultyLabel() const {
   switch (difficulty) {
-    case Difficulty::EASY:   return tr(STR_CARO_EASY);
-    case Difficulty::MEDIUM: return tr(STR_CARO_MEDIUM);
-    case Difficulty::HARD:   return tr(STR_CARO_HARD);
+    case Difficulty::EASY:
+      return tr(STR_CARO_EASY);
+    case Difficulty::MEDIUM:
+      return tr(STR_CARO_MEDIUM);
+    case Difficulty::HARD:
+      return tr(STR_CARO_HARD);
   }
   return "";
 }

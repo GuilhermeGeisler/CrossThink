@@ -4,7 +4,21 @@
 
 class MappedInputManager {
  public:
-  enum class Button { Back, Confirm, Left, Right, Up, Down, Power, PageBack, PageForward, FrontPageBack, FrontPageForward };
+  enum class Button {
+    Back,
+    Confirm,
+    Left,
+    Right,
+    Up,
+    Down,
+    Power,
+    PageBack,
+    PageForward,
+    FrontPageBack,
+    FrontPageForward,
+    NavNext,
+    NavPrevious
+  };
 
   struct Labels {
     const char* btn1;
@@ -25,6 +39,8 @@ class MappedInputManager {
   Labels mapLabels(const char* back, const char* confirm, const char* previous, const char* next) const;
   // Returns the raw front button index that was pressed this frame (or -1 if none).
   int getPressedFrontButton() const;
+  // Returns true if Left/Right front buttons should be swapped for navigation (e.g. in inverted orientation).
+  bool isNavDirectionSwapped() const;
 
  private:
   HalGPIO& gpio;

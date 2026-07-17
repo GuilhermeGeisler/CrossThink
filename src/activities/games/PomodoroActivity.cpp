@@ -3,10 +3,10 @@
 #include <GfxRenderer.h>
 #include <I18n.h>
 
+#include <cmath>
+
 #include "components/UITheme.h"
 #include "fontIds.h"
-
-#include <cmath>
 
 // Draw a circular progress ring. Progress 0.0–1.0, starts from 12 o'clock clockwise.
 // Draws a full background ring (outline), then fills the progress arc.
@@ -144,9 +144,12 @@ void PomodoroActivity::loop() {
       constexpr uint32_t MIN_MS = 5 * 60 * 1000;
       constexpr uint32_t MAX_MS = 60 * 60 * 1000;
       uint32_t* target = nullptr;
-      if (selectedField == IdleField::FOCUS)       target = &focusDurationMs;
-      else if (selectedField == IdleField::SHORT_BREAK) target = &shortBreakDurationMs;
-      else                                          target = &longBreakDurationMs;
+      if (selectedField == IdleField::FOCUS)
+        target = &focusDurationMs;
+      else if (selectedField == IdleField::SHORT_BREAK)
+        target = &shortBreakDurationMs;
+      else
+        target = &longBreakDurationMs;
       uint32_t next = *target + (uint32_t)(delta * (int)STEP);
       if (next >= MIN_MS && next <= MAX_MS) {
         *target = next;
@@ -154,7 +157,7 @@ void PomodoroActivity::loop() {
         requestUpdate();
       }
     };
-    if (mappedInput.wasReleased(MappedInputManager::Button::Up))   adjustField(-1);
+    if (mappedInput.wasReleased(MappedInputManager::Button::Up)) adjustField(-1);
     if (mappedInput.wasReleased(MappedInputManager::Button::Down)) adjustField(+1);
   }
 
@@ -209,10 +212,14 @@ void PomodoroActivity::render(RenderLock&&) {
     const int listTop = contentCenter - (3 * rowH) / 2;
     const int labelX = pageWidth / 2 - 80;  // left-align labels at ~center-80
 
-    struct { const char* name; uint32_t ms; IdleField field; } rows[3] = {
-      {tr(STR_POMO_FOCUS_LABEL), focusDurationMs,      IdleField::FOCUS},
-      {tr(STR_POMO_SHORT_BREAK), shortBreakDurationMs, IdleField::SHORT_BREAK},
-      {tr(STR_POMO_LONG_BREAK),  longBreakDurationMs,  IdleField::LONG_BREAK},
+    struct {
+      const char* name;
+      uint32_t ms;
+      IdleField field;
+    } rows[3] = {
+        {tr(STR_POMO_FOCUS_LABEL), focusDurationMs, IdleField::FOCUS},
+        {tr(STR_POMO_SHORT_BREAK), shortBreakDurationMs, IdleField::SHORT_BREAK},
+        {tr(STR_POMO_LONG_BREAK), longBreakDurationMs, IdleField::LONG_BREAK},
     };
 
     for (int i = 0; i < 3; i++) {
@@ -247,7 +254,8 @@ void PomodoroActivity::render(RenderLock&&) {
     drawProgressRing(renderer, ringCenterX, ringCenterY, RING_RADIUS, RING_THICKNESS, progress);
 
     // State label inside ring (above center)
-    renderer.drawCenteredText(UI_10_FONT_ID, ringCenterY - timeHeight / 2 - labelHeight - 2, getStateLabel(), true, EpdFontFamily::BOLD);
+    renderer.drawCenteredText(UI_10_FONT_ID, ringCenterY - timeHeight / 2 - labelHeight - 2, getStateLabel(), true,
+                              EpdFontFamily::BOLD);
 
     // Countdown inside ring (centered)
     int minutes = remaining / 60000;
@@ -262,8 +270,10 @@ void PomodoroActivity::render(RenderLock&&) {
     const int dotsX = (pageWidth - totalDotsWidth) / 2;
     for (int i = 0; i < SESSIONS_BEFORE_LONG_BREAK; i++) {
       int x = dotsX + i * (dotSize + dotSpacing);
-      if (i < completedSessions) renderer.fillRect(x, dotsY, dotSize, dotSize, true);
-      else                       renderer.drawRect(x, dotsY, dotSize, dotSize, true);
+      if (i < completedSessions)
+        renderer.fillRect(x, dotsY, dotSize, dotSize, true);
+      else
+        renderer.drawRect(x, dotsY, dotSize, dotSize, true);
     }
   }
 

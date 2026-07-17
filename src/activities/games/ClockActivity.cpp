@@ -6,13 +6,15 @@
 #include <esp_sntp.h>
 #include <sys/time.h>
 
-#include <ctime>
 #include <cstdlib>
+#include <ctime>
 
 #include "CrossPointSettings.h"
 #include "components/UITheme.h"
 #include "fontIds.h"
 #include "util/LunarCalendar.h"
+
+bool g_clockApproximate = false;
 
 namespace {
 // Day/month/field names use I18n — build arrays at call site via tr()
@@ -30,7 +32,7 @@ int daysInMonth(int month, int year) {
     int y = year + 1900;
     return ((y % 4 == 0 && y % 100 != 0) || y % 400 == 0) ? 29 : 28;
   }
-  static const int days[] = {31,0,31,30,31,30,31,31,30,31,30,31};
+  static const int days[] = {31, 0, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
   return days[month];
 }
 }  // namespace
@@ -70,7 +72,7 @@ void ClockActivity::onEnter() {
     } else {
       editTime = {};
       editTime.tm_year = 125;  // 2025
-      editTime.tm_mon  = 0;
+      editTime.tm_mon = 0;
       editTime.tm_mday = 1;
     }
     editing = true;
@@ -101,7 +103,7 @@ void ClockActivity::loop() {
       } else {
         editTime = {};
         editTime.tm_year = 125;  // 2025
-        editTime.tm_mon  = 0;
+        editTime.tm_mon = 0;
         editTime.tm_mday = 1;
       }
       editField = 0;
@@ -131,23 +133,45 @@ void ClockActivity::loop() {
 
     if (mappedInput.wasReleased(MappedInputManager::Button::Up)) {
       switch (editField) {
-        case 0: editTime.tm_hour = (editTime.tm_hour + 1) % 24; break;
-        case 1: editTime.tm_min  = (editTime.tm_min  + 1) % 60; break;
-        case 2: { int max = daysInMonth(editTime.tm_mon, editTime.tm_year);
-                  editTime.tm_mday = editTime.tm_mday % max + 1; break; }
-        case 3: editTime.tm_mon  = (editTime.tm_mon  + 1) % 12; break;
-        case 4: editTime.tm_year = (editTime.tm_year < 200) ? editTime.tm_year + 1 : 125; break;
+        case 0:
+          editTime.tm_hour = (editTime.tm_hour + 1) % 24;
+          break;
+        case 1:
+          editTime.tm_min = (editTime.tm_min + 1) % 60;
+          break;
+        case 2: {
+          int max = daysInMonth(editTime.tm_mon, editTime.tm_year);
+          editTime.tm_mday = editTime.tm_mday % max + 1;
+          break;
+        }
+        case 3:
+          editTime.tm_mon = (editTime.tm_mon + 1) % 12;
+          break;
+        case 4:
+          editTime.tm_year = (editTime.tm_year < 200) ? editTime.tm_year + 1 : 125;
+          break;
       }
       changed = true;
     }
     if (mappedInput.wasReleased(MappedInputManager::Button::Down)) {
       switch (editField) {
-        case 0: editTime.tm_hour = (editTime.tm_hour + 23) % 24; break;
-        case 1: editTime.tm_min  = (editTime.tm_min  + 59) % 60; break;
-        case 2: { int max = daysInMonth(editTime.tm_mon, editTime.tm_year);
-                  editTime.tm_mday = (editTime.tm_mday - 2 + max) % max + 1; break; }
-        case 3: editTime.tm_mon  = (editTime.tm_mon  + 11) % 12; break;
-        case 4: editTime.tm_year = (editTime.tm_year > 125) ? editTime.tm_year - 1 : 125; break;
+        case 0:
+          editTime.tm_hour = (editTime.tm_hour + 23) % 24;
+          break;
+        case 1:
+          editTime.tm_min = (editTime.tm_min + 59) % 60;
+          break;
+        case 2: {
+          int max = daysInMonth(editTime.tm_mon, editTime.tm_year);
+          editTime.tm_mday = (editTime.tm_mday - 2 + max) % max + 1;
+          break;
+        }
+        case 3:
+          editTime.tm_mon = (editTime.tm_mon + 11) % 12;
+          break;
+        case 4:
+          editTime.tm_year = (editTime.tm_year > 125) ? editTime.tm_year - 1 : 125;
+          break;
       }
       changed = true;
     }
@@ -211,16 +235,16 @@ void ClockActivity::render(RenderLock&&) {
 
     // Date row
     char dateBuf[64];
-    const char* monthNames[] = {tr(STR_MONTH_JAN), tr(STR_MONTH_FEB), tr(STR_MONTH_MAR),
-        tr(STR_MONTH_APR), tr(STR_MONTH_MAY), tr(STR_MONTH_JUN), tr(STR_MONTH_JUL),
-        tr(STR_MONTH_AUG), tr(STR_MONTH_SEP), tr(STR_MONTH_OCT), tr(STR_MONTH_NOV), tr(STR_MONTH_DEC)};
-    snprintf(dateBuf, sizeof(dateBuf), "%d %s %d",
-             editTime.tm_mday, monthNames[editTime.tm_mon], editTime.tm_year + 1900);
+    const char* monthNames[] = {tr(STR_MONTH_JAN), tr(STR_MONTH_FEB), tr(STR_MONTH_MAR), tr(STR_MONTH_APR),
+                                tr(STR_MONTH_MAY), tr(STR_MONTH_JUN), tr(STR_MONTH_JUL), tr(STR_MONTH_AUG),
+                                tr(STR_MONTH_SEP), tr(STR_MONTH_OCT), tr(STR_MONTH_NOV), tr(STR_MONTH_DEC)};
+    snprintf(dateBuf, sizeof(dateBuf), "%d %s %d", editTime.tm_mday, monthNames[editTime.tm_mon],
+             editTime.tm_year + 1900);
     renderer.drawCenteredText(UI_10_FONT_ID, startY + timeH + 12, dateBuf);
 
     // Active field label
-    const char* fieldLabels[] = {tr(STR_FIELD_HOUR), tr(STR_FIELD_MINUTE),
-        tr(STR_FIELD_DAY), tr(STR_FIELD_MONTH), tr(STR_FIELD_YEAR)};
+    const char* fieldLabels[] = {tr(STR_FIELD_HOUR), tr(STR_FIELD_MINUTE), tr(STR_FIELD_DAY), tr(STR_FIELD_MONTH),
+                                 tr(STR_FIELD_YEAR)};
     char fieldBuf[32];
     snprintf(fieldBuf, sizeof(fieldBuf), "< %s >", fieldLabels[editField]);
     renderer.drawCenteredText(SMALL_FONT_ID, startY + timeH + 12 + dateH + 12, fieldBuf);
@@ -241,25 +265,23 @@ void ClockActivity::render(RenderLock&&) {
 
     extern bool g_clockApproximate;
     char timeBuf[8];
-    snprintf(timeBuf, sizeof(timeBuf), "%s%02d:%02d", g_clockApproximate ? "~" : "",
-             timeinfo.tm_hour, timeinfo.tm_min);
+    snprintf(timeBuf, sizeof(timeBuf), "%s%02d:%02d", g_clockApproximate ? "~" : "", timeinfo.tm_hour, timeinfo.tm_min);
 
     const char* dayNames[] = {tr(STR_DAY_SUN), tr(STR_DAY_MON), tr(STR_DAY_TUE), tr(STR_DAY_WED),
-        tr(STR_DAY_THU), tr(STR_DAY_FRI), tr(STR_DAY_SAT)};
-    const char* monthNames[] = {tr(STR_MONTH_JAN), tr(STR_MONTH_FEB), tr(STR_MONTH_MAR),
-        tr(STR_MONTH_APR), tr(STR_MONTH_MAY), tr(STR_MONTH_JUN), tr(STR_MONTH_JUL),
-        tr(STR_MONTH_AUG), tr(STR_MONTH_SEP), tr(STR_MONTH_OCT), tr(STR_MONTH_NOV), tr(STR_MONTH_DEC)};
+                              tr(STR_DAY_THU), tr(STR_DAY_FRI), tr(STR_DAY_SAT)};
+    const char* monthNames[] = {tr(STR_MONTH_JAN), tr(STR_MONTH_FEB), tr(STR_MONTH_MAR), tr(STR_MONTH_APR),
+                                tr(STR_MONTH_MAY), tr(STR_MONTH_JUN), tr(STR_MONTH_JUL), tr(STR_MONTH_AUG),
+                                tr(STR_MONTH_SEP), tr(STR_MONTH_OCT), tr(STR_MONTH_NOV), tr(STR_MONTH_DEC)};
 
     char dateBuf[64];
-    snprintf(dateBuf, sizeof(dateBuf), "%s, %d %s %d",
-             dayNames[timeinfo.tm_wday], timeinfo.tm_mday,
+    snprintf(dateBuf, sizeof(dateBuf), "%s, %d %s %d", dayNames[timeinfo.tm_wday], timeinfo.tm_mday,
              monthNames[timeinfo.tm_mon], timeinfo.tm_year + 1900);
 
     const int timeHeight = renderer.getLineHeight(UI_12_FONT_ID);
     const int dateHeight = renderer.getLineHeight(UI_10_FONT_ID);
-    const int gregH  = renderer.getLineHeight(SMALL_FONT_ID);
-    const int cellH  = gregH * 2 + 10;  // two rows (gregorian + lunar) per calendar cell
-    const int calH   = cellH * 7;       // header row + up to 6 body rows
+    const int gregH = renderer.getLineHeight(SMALL_FONT_ID);
+    const int cellH = gregH * 2 + 10;  // two rows (gregorian + lunar) per calendar cell
+    const int calH = cellH * 7;        // header row + up to 6 body rows
 
     // Center the whole block in content area
     const int contentTop = metrics.topPadding + metrics.headerHeight + metrics.verticalSpacing;
@@ -280,7 +302,8 @@ void ClockActivity::render(RenderLock&&) {
     }
     renderCalendar(startY + timeHeight + 8 + dateHeight + 12, viewTm, isCurrentMonth);
 
-    const auto labels = mappedInput.mapLabels(tr(STR_BACK), tr(STR_CLOCK_SET_TIME), tr(STR_DIR_LEFT), tr(STR_DIR_RIGHT));
+    const auto labels =
+        mappedInput.mapLabels(tr(STR_BACK), tr(STR_CLOCK_SET_TIME), tr(STR_DIR_LEFT), tr(STR_DIR_RIGHT));
     GUI.drawButtonHints(renderer, labels.btn1, labels.btn2, labels.btn3, labels.btn4);
   }
 
@@ -288,11 +311,11 @@ void ClockActivity::render(RenderLock&&) {
 }
 
 void ClockActivity::renderCalendar(int startY, const struct tm& t, bool isCurrentMonth) const {
-  const char* const DAY_HDR[] = {tr(STR_CAL_SUN), tr(STR_CAL_MON), tr(STR_CAL_TUE),
-      tr(STR_CAL_WED), tr(STR_CAL_THU), tr(STR_CAL_FRI), tr(STR_CAL_SAT)};
-  const char* monthNames[] = {tr(STR_MONTH_JAN), tr(STR_MONTH_FEB), tr(STR_MONTH_MAR),
-      tr(STR_MONTH_APR), tr(STR_MONTH_MAY), tr(STR_MONTH_JUN), tr(STR_MONTH_JUL),
-      tr(STR_MONTH_AUG), tr(STR_MONTH_SEP), tr(STR_MONTH_OCT), tr(STR_MONTH_NOV), tr(STR_MONTH_DEC)};
+  const char* const DAY_HDR[] = {tr(STR_CAL_SUN), tr(STR_CAL_MON), tr(STR_CAL_TUE), tr(STR_CAL_WED),
+                                 tr(STR_CAL_THU), tr(STR_CAL_FRI), tr(STR_CAL_SAT)};
+  const char* monthNames[] = {tr(STR_MONTH_JAN), tr(STR_MONTH_FEB), tr(STR_MONTH_MAR), tr(STR_MONTH_APR),
+                              tr(STR_MONTH_MAY), tr(STR_MONTH_JUN), tr(STR_MONTH_JUL), tr(STR_MONTH_AUG),
+                              tr(STR_MONTH_SEP), tr(STR_MONTH_OCT), tr(STR_MONTH_NOV), tr(STR_MONTH_DEC)};
   const int pageWidth = renderer.getScreenWidth();
   const int margin = 20;
   const int calW = pageWidth - margin * 2;
@@ -304,16 +327,14 @@ void ClockActivity::renderCalendar(int startY, const struct tm& t, bool isCurren
   // Month/year label + lunar month info
   int maxDay = daysInMonth(t.tm_mon, t.tm_year);
   LunarDate lunarFirst = solarToLunar(1, t.tm_mon + 1, t.tm_year + 1900);
-  LunarDate lunarLast  = solarToLunar(maxDay, t.tm_mon + 1, t.tm_year + 1900);
+  LunarDate lunarLast = solarToLunar(maxDay, t.tm_mon + 1, t.tm_year + 1900);
 
   char monthLabel[80];
   if (lunarFirst.month == lunarLast.month) {
-    snprintf(monthLabel, sizeof(monthLabel), "< %s %d — %s %d >",
-             monthNames[t.tm_mon], t.tm_year + 1900,
+    snprintf(monthLabel, sizeof(monthLabel), "< %s %d — %s %d >", monthNames[t.tm_mon], t.tm_year + 1900,
              tr(STR_LUNAR_MONTH), lunarFirst.month);
   } else {
-    snprintf(monthLabel, sizeof(monthLabel), "< %s %d — %s %d-%d >",
-             monthNames[t.tm_mon], t.tm_year + 1900,
+    snprintf(monthLabel, sizeof(monthLabel), "< %s %d — %s %d-%d >", monthNames[t.tm_mon], t.tm_year + 1900,
              tr(STR_LUNAR_MONTH), lunarFirst.month, lunarLast.month);
   }
   renderer.drawCenteredText(SMALL_FONT_ID, startY, monthLabel);
@@ -328,14 +349,20 @@ void ClockActivity::renderCalendar(int startY, const struct tm& t, bool isCurren
 
   // First weekday of this month
   struct tm fm = t;
-  fm.tm_mday = 1; fm.tm_hour = 0; fm.tm_min = 0; fm.tm_sec = 0;
+  fm.tm_mday = 1;
+  fm.tm_hour = 0;
+  fm.tm_min = 0;
+  fm.tm_sec = 0;
   mktime(&fm);
 
   int col = fm.tm_wday;
   int rowY = hdrY + cellH;
 
   // Precompute lunar dates
-  struct { int day; int month; } lunarData[32] = {};
+  struct {
+    int day;
+    int month;
+  } lunarData[32] = {};
   for (int d = 1; d <= maxDay; d++) {
     LunarDate ld = solarToLunar(d, t.tm_mon + 1, t.tm_year + 1900);
     lunarData[d] = {ld.day, ld.month};
@@ -353,12 +380,12 @@ void ClockActivity::renderCalendar(int startY, const struct tm& t, bool isCurren
       snprintf(lunBuf, sizeof(lunBuf), "%d", lunarData[day].day);
     }
 
-    const int cx    = x0 + col * cellW;
+    const int cx = x0 + col * cellW;
     const int gregX = cx + (cellW - renderer.getTextWidth(SMALL_FONT_ID, gregBuf)) / 2;
-    const int lunX  = cx + (cellW - renderer.getTextWidth(SMALL_FONT_ID, lunBuf))  / 2;
-    const int lunY  = rowY + gregH + 2;
+    const int lunX = cx + (cellW - renderer.getTextWidth(SMALL_FONT_ID, lunBuf)) / 2;
+    const int lunY = rowY + gregH + 2;
 
-    const bool isToday    = isCurrentMonth && (day == t.tm_mday);
+    const bool isToday = isCurrentMonth && (day == t.tm_mday);
     const bool isNewLunar = (lunarData[day].day == 1);
 
     if (isToday) {
@@ -376,6 +403,9 @@ void ClockActivity::renderCalendar(int startY, const struct tm& t, bool isCurren
       }
     }
 
-    if (++col == 7) { col = 0; rowY += cellH; }
+    if (++col == 7) {
+      col = 0;
+      rowY += cellH;
+    }
   }
 }

@@ -13,9 +13,9 @@ class SudokuActivity final : public Activity {
   static constexpr int BOX = 3;
 
   // Puzzle state
-  uint8_t puzzle[SIZE][SIZE];   // current grid (0 = empty)
-  uint8_t solution[SIZE][SIZE]; // full solution
-  bool fixed[SIZE][SIZE];       // true = given clue (not editable)
+  uint8_t puzzle[SIZE][SIZE];    // current grid (0 = empty)
+  uint8_t solution[SIZE][SIZE];  // full solution
+  bool fixed[SIZE][SIZE];        // true = given clue (not editable)
 
   int cursorRow = 0;
   int cursorCol = 0;

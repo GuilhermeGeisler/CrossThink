@@ -57,26 +57,25 @@ void MinesweeperActivity::reveal(int row, int col) {
   // Flood-fill for empty cells (0 adjacent mines)
   if (grid[row][col] == 0) {
     for (int dr = -1; dr <= 1; dr++)
-      for (int dc = -1; dc <= 1; dc++)
-        reveal(row + dr, col + dc);
+      for (int dc = -1; dc <= 1; dc++) reveal(row + dr, col + dc);
   }
 }
 
 void MinesweeperActivity::revealAll() {
   for (int r = 0; r < ROWS; r++)
-    for (int c = 0; c < COLS; c++)
-      state[r][c] = CellState::REVEALED;
+    for (int c = 0; c < COLS; c++) state[r][c] = CellState::REVEALED;
 }
 
-bool MinesweeperActivity::checkWin() const {
-  return revealedCount == (ROWS * COLS - mineCount);
-}
+bool MinesweeperActivity::checkWin() const { return revealedCount == (ROWS * COLS - mineCount); }
 
 const char* MinesweeperActivity::difficultyLabel() const {
   switch (difficulty) {
-    case Difficulty::EASY:   return tr(STR_MINES_EASY);
-    case Difficulty::MEDIUM: return tr(STR_MINES_MEDIUM);
-    case Difficulty::HARD:   return tr(STR_MINES_HARD);
+    case Difficulty::EASY:
+      return tr(STR_MINES_EASY);
+    case Difficulty::MEDIUM:
+      return tr(STR_MINES_MEDIUM);
+    case Difficulty::HARD:
+      return tr(STR_MINES_HARD);
   }
   return "";
 }
@@ -86,8 +85,7 @@ void MinesweeperActivity::onEnter() {
   mineCount = MINE_COUNTS[(int)difficulty];
   memset(grid, 0, sizeof(grid));
   for (int r = 0; r < ROWS; r++)
-    for (int c = 0; c < COLS; c++)
-      state[r][c] = CellState::HIDDEN;
+    for (int c = 0; c < COLS; c++) state[r][c] = CellState::HIDDEN;
   cursorRow = ROWS / 2;
   cursorCol = COLS / 2;
   flagCount = 0;
@@ -168,7 +166,10 @@ void MinesweeperActivity::loop() {
           gameOver = true;
         } else {
           reveal(cursorRow, cursorCol);
-          if (checkWin()) { won = true; revealAll(); }
+          if (checkWin()) {
+            won = true;
+            revealAll();
+          }
         }
         changed = true;
       } else if (state[cursorRow][cursorCol] == CellState::REVEALED && grid[cursorRow][cursorCol] > 0) {
@@ -178,11 +179,17 @@ void MinesweeperActivity::loop() {
             for (int dc = -1; dc <= 1; dc++) {
               int r = cursorRow + dr, c = cursorCol + dc;
               if (r >= 0 && r < ROWS && c >= 0 && c < COLS && state[r][c] == CellState::HIDDEN) {
-                if (grid[r][c] == 9) { revealAll(); gameOver = true; }
-                else reveal(r, c);
+                if (grid[r][c] == 9) {
+                  revealAll();
+                  gameOver = true;
+                } else
+                  reveal(r, c);
               }
             }
-          if (!gameOver && checkWin()) { won = true; revealAll(); }
+          if (!gameOver && checkWin()) {
+            won = true;
+            revealAll();
+          }
           changed = true;
         }
       } else if (state[cursorRow][cursorCol] == CellState::FLAGGED) {

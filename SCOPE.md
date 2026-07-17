@@ -1,12 +1,12 @@
-# Project Vision & Scope: CrossPoint Reader
+# Project Vision & Scope: CrossPoint Reader (CrossThink)
 
-CrossPoint Reader é um firmware open-source para e-readers baseados em ESP32-C3 (Xteink X4/X3). Originalmente focado exclusivamente em leitura, o projeto evoluiu para incluir ferramentas complementares, jogos leves e funcionalidades de produtividade — tudo otimizado para as restrições de hardware (380KB RAM, CPU single-core, display E-Ink).
+CrossPoint Reader é um firmware open-source para e-readers baseados em ESP32-C3 (Xteink X4/X3). Originalmente focado exclusivamente em leitura, o projeto evoluiu para incluir ferramentas complementares, jogos leves, gamificação de hábito de leitura e funcionalidades de produtividade — tudo otimizado para as restrições de hardware (~380KB RAM, CPU single-core, display E-Ink).
 
 ## 1. Core Mission
 
 **Fornecer uma experiência de leitura eficiente e personalizável, complementada por ferramentas úteis que não comprometam a estabilidade do dispositivo.**
 
-O projeto aceita features além da leitura pura (jogos, calculadora, flashcards), mas mantém disciplina técnica: cada feature deve funcionar dentro das limitações de RAM e CPU, sem degradar a experiência principal de leitura.
+O projeto aceita features além da leitura pura (jogos, calculadora, flashcards, stats de leitura, coleções), mas mantém disciplina técnica: cada feature deve funcionar dentro das limitações de RAM e CPU, sem degradar a experiência principal de leitura.
 
 ## 2. Scope
 
@@ -17,9 +17,10 @@ O projeto aceita features além da leitura pura (jogos, calculadora, flashcards)
 #### Leitura e Renderização
 * **User Experience:** Interfaces intuitivas, mapeamento de botões, navegação em livros, bookmarks, footnotes.
 * **Document Rendering:** Suporte a EPUB 2/3, XTC, TXT, BMP. Parser de CSS, hyphenation, kerning.
-* **Typography & Legibility:** Fontes customizadas (builtin + SD card), hyphenation engines, line spacing ajustável, focus reading.
+* **Typography & Legibility:** Fontes customizadas (builtin + SD card), incluindo as famílias adicionais **ChareInk, Lexend Deca, Bitter e Inter** portadas do CrossInk. Hyphenation engines, line spacing ajustável, focus reading.
 * **E-Ink Driver Refinement:** Gerenciamento de ghosting, refresh modes (full/half/fast), grayscale support.
 * **Library Management:** File browser, recent books, cache management, hidden files toggle.
+* **Coleções + Bookshelf em grid:** Sistema de coleções (Favorites, Recently Added, All Books, Finished, Unopened + coleções custom) com agrupamento automático por série (`collapseSeries`), portado do CrumBLE. Ver `DETAILED_STEPS.md` item 3 para plano de integração — inicialmente como tela adicional na Home, não substituindo a tela padrão.
 
 #### Conectividade e Transferência
 * **Local Transfer:** Web server para upload/download de livros, OPDS browser, Calibre wireless connect.
@@ -27,17 +28,18 @@ O projeto aceita features além da leitura pura (jogos, calculadora, flashcards)
 * **KOReader Sync:** Sincronização de progresso de leitura com KOReader.
 
 #### Ferramentas Complementares
-* **Dictionary Lookup:** Dicionário local StarDict (planejado).
+* **Dictionary Lookup:** Dicionário local StarDict, portado do CrumBLE (sem a lógica de auto-disable de BLE, que não se aplica mais — ver seção 5).
 * **Clock Display:** Relógio com RTC dedicado (X3) ou NTP sync (X4).
-* **Flashcards SRS:** Sistema de repetição espaçada SM-2 para aprendizado.
-* **Calculadora:** Calculadora básica.
-* **Conversor de Unidades:** Conversão entre unidades de medida.
-* **Pomodoro Timer:** Timer para técnica Pomodoro.
+* **Flashcards SRS:** Sistema de repetição espaçada SM-2 para aprendizado. ✅ Implementado.
+* **Calculadora:** Calculadora básica. ✅ Implementado.
+* **Conversor de Unidades:** Conversão entre unidades de medida. ✅ Implementado.
+* **Pomodoro Timer:** Timer para técnica Pomodoro. ✅ Implementado.
+* **Reading Stats + Pet Virtual:** Sistema de estatísticas de leitura (streaks, heatmap, badges, "Wrapped" anual) e pet virtual que evolui com o hábito de leitura, portado do aalu. Ver `DETAILED_STEPS.md` item 5.
 
 #### Jogos Leves
 *Jogos simples que não exigem renderização em tempo real nem comprometem a RAM.*
-* **Board Games:** Chess, Caro (Gomoku), Sudoku.
-* **Puzzle Games:** Minesweeper, 2048, Wordle.
+* **Board Games:** Chess, Caro (Gomoku), Sudoku. ✅ Implementado.
+* **Puzzle Games:** Minesweeper, 2048, Wordle. ✅ Implementado.
 
 #### Customização
 * **Themes:** Múltiplos temas visuais (Classic, Lyra, RoundedRaff).
@@ -54,18 +56,14 @@ O projeto aceita features além da leitura pura (jogos, calculadora, flashcards)
 * **Media Playback:** Audio players, audiobooks. Hardware não suporta áudio.
 * **Complex Annotation:** Notas digitadas. Melhor suited para dispositivos com input capabilities superiores.
 * **PDF Rendering:** PDFs são fixed-layout, requerem panning/zooming constante — UX pobre em E-Ink.
-* **Virtual Pet:** Sistema de pet virtual com evolução (considerado muito complexo para RAM disponível).
-* **Reading Stats Avançadas:** Heatmaps, badges, "Wrapped" anual. Sistema de stats simples pode ser considerado, mas features avançadas são out-of-scope.
-* **Collections/Bookshelf:** Sistema de coleções com grid view e series collapsing. Substituiria a Home atual — mudança muito grande de UX.
-* **EPUB Optimizer:** Pré-cache de layout via navegador. Otimização de performance, não feature visível.
+* **EPUB Optimizer / pré-cache client-side:** Otimização de performance (indexação pré-calculada no navegador), não uma feature visível. Baixa prioridade, avaliar depois dos itens acima estarem estáveis — ver `DETAILED_STEPS.md` item 4.
+* **JPEG/PNG Native Viewer standalone:** Visualizador de imagens fora do contexto EPUB (wallpapers custom, etc). Base já suporta JPEG/PNG dentro de EPUBs. Baixa prioridade — ver `DETAILED_STEPS.md` item 7.
 
 ### In-Scope — Technically Unsupported
 
 *Features que se alinham com objetivos mas são impraticáveis no hardware atual.*
 
-* **BLE Page Turner:** Controle remoto via Bluetooth. Testes mostraram que NimBLE consome ~58KB de heap, causando crashes em operações de dicionário e parsing de EPUB. Removido do projeto.
-* **Multiple Font Families (CrossInk):** Fontes ChareInk, Lexend Deca, Bitter, Inter. ~180 arquivos de fonte adicionais excederiam espaço de flash disponível (7.5MB por slot OTA).
-* **JPEG/PNG Native Viewer:** Visualizador de imagens standalone fora do contexto EPUB. Base já suporta JPEG/PNG dentro de EPUBs; viewer standalone é low priority.
+* **BLE Page Turner:** Controle remoto via Bluetooth. Testes do CrumBLE (upstream) mostraram que NimBLE consome ~58KB de heap, causando crashes em operações de dicionário e parsing de EPUB quando ligado simultaneamente. **Removido do projeto** — decisão confirmada, não é candidato a retorno.
 
 ## 3. Hardware Constraints
 
@@ -75,13 +73,13 @@ O ESP32-C3 impõe limites rígidos que guiam todas as decisões de design:
 |---------|--------|---------|
 | **RAM** | ~380KB usable | Fragmentation mata, não total usage. Cada feature deve justificar alocações. |
 | **CPU** | Single-core RISC-V @ 160MHz | No background tasks pesados. WiFi + rendering simultâneo = crash. |
-| **Flash** | 16MB (7.5MB por slot OTA) | Fontes builtin + jogos + dicionário + features = espaço crítico. |
+| **Flash** | 16MB (7.5MB por slot OTA, ver `partitions.csv`) | Fontes builtin + jogos + dicionário + stats + coleções = espaço a monitorar, mas não é motivo pra excluir features de antemão — é motivo pra medir o binário final e ajustar build flags/variantes se necessário (ver `docs/font-build-variants.md` do CrossInk como referência de solução). |
 | **Display** | 800x480 E-Ink, single buffer | No double-buffering. Grayscale requer técnicas especiais. |
 
 ### Regras de Design
 
 1. **Heap discipline:** `makeUniqueNoThrow` sempre. Null-check + `LOG_ERR` em toda alocação falível.
-2. **No background tasks:** WiFi desliga durante rendering pesado. BLE removido por conflito de heap.
+2. **No background tasks:** WiFi desliga durante rendering pesado.
 3. **Cache aggressively:** `.crosspoint/` no SD card para metadata, layout, covers. RAM é preciosa.
 4. **Single responsibility:** Cada Activity aloca em `onEnter()`, libera em `onExit()`. No leaks.
 
@@ -89,36 +87,31 @@ O ESP32-C3 impõe limites rígidos que guiam todas as decisões de design:
 
 Novas features são avaliadas por:
 
-1. **Cabe na RAM?** Se a feature exige >20KB de heap steady-state ou alocações grandes em hot path, é out-of-scope.
-2. **Não quebra a leitura?** Se a feature pode causar crashes durante leitura (heap fragmentation, watchdog timeout), é out-of-scope.
-3. **Cabe na flash?** Se adicionar a feature excede 7.5MB de firmware, é out-of-scope.
+1. **Cabe na RAM?** Se a feature exige >20KB de heap steady-state ou alocações grandes em hot path, precisa de plano de mitigação explícito antes de entrar em scope — não é descarte automático.
+2. **Não quebra a leitura?** Se a feature pode causar crashes durante leitura (heap fragmentation, watchdog timeout), precisa resolver isso antes de ser considerada pronta (não antes de ser considerada in-scope).
+3. **Cabe na flash?** Medir o binário real depois de portada. Se exceder o slot OTA, ajustar build variants antes de cortar a feature.
 4. **Usuários querem?** Features devem resolver problemas reais, não ser "nice to have".
 
 ### Critério Final
 
-> **Uma feature é in-scope se melhora a experiência de leitura OU fornece utilidade complementar sem comprometer estabilidade, performance ou espaço.**
+> **Uma feature é in-scope se melhora a experiência de leitura OU fornece utilidade complementar, com um plano crível de caber nas limitações de RAM/flash.** Decisões de cortar uma feature por limitação de hardware são tomadas com base em medição real (heap profiling, tamanho de binário), não em estimativa a priori — e são decisão do mantenedor do projeto, não do agente que estiver ajudando a codar.
 
-Jogos leves, calculadora e flashcards são in-scope porque:
-- Usam <10KB de heap steady-state
-- Não rodam em background durante leitura
-- São opt-in (toggles no menu Tools)
-- Não degradam a experiência principal
-
-> **Note to Contributors:** Se não tem certeza se sua ideia fits no scope, abra uma **Discussion** antes de codificar. Inclua estimativa de RAM/flash usage na proposta.
+> **Note to Contributors (incluindo agentes de IA):** Não remova ou reclassifique itens deste documento por conta própria com base em estimativa de risco. Se identificar um risco técnico real (ex: heap insuficiente medido em teste), documente o achado com números concretos e proponha a mudança — não aplique a mudança direto no `SCOPE.md`.
 
 ## 5. Project History
 
 Este projeto é um merge de múltiplos forks do CrossPoint Reader:
 
-| Fork | Features Portadas |
-|------|-------------------|
-| **CrossPoint** (base) | Reader engine, HAL, settings, OPDS, WiFi, themes |
-| **CrossPet** | Flashcards SRS, Pomodoro, menu Tools com toggles |
-| **Shortbread** | Calculadora, conversor de unidades |
-| **CrossWordle** | Jogo Wordle |
-| **CrumBLE** | (parcial) Dicionário StarDict planejado; BLE removido |
-| **aalu** | (parcial) Stats simples planejado; pet virtual out-of-scope |
-| **CrossInk** | (não portado) Fontes alternativas out-of-scope por flash |
-| **inx** | (não portado) JPEG/PNG viewer out-of-scope |
+| Fork | Features Portadas | Status |
+|------|-------------------|--------|
+| **CrossPoint** (base) | Reader engine, HAL, settings, OPDS, WiFi, themes | ✅ Base |
+| **CrossPet** | Flashcards SRS, Pomodoro, Clock, jogos (Chess/Caro/Sudoku/Minesweeper/2048), menu Tools com toggles | ✅ Implementado |
+| **Shortbread** | Calculadora, conversor de unidades | ✅ Implementado |
+| **CrossWordle** | Jogo Wordle | ✅ Implementado |
+| **CrumBLE** | Dicionário StarDict, Coleções + Bookshelf (com agrupamento por série nativo) | 🔲 Planejado — ver `DETAILED_STEPS.md` itens 1 e 3 |
+| **CrumBLE** | BLE (page-turner remoto) | ❌ Removido — inviável por heap (ver seção 2, "Technically Unsupported") |
+| **aalu** | Stats de leitura (heatmap, badges, "Wrapped") + Pet virtual | 🔲 Planejado — ver `DETAILED_STEPS.md` item 5 |
+| **CrossInk** | Fontes ChareInk, Lexend Deca, Bitter, Inter + build variants por tamanho de flash | 🔲 Planejado — ver `DETAILED_STEPS.md` item 6 |
+| **inx** | Visualizador JPEG/PNG standalone | 🔲 Backlog, baixa prioridade — ver `DETAILED_STEPS.md` item 7 |
 
-Features não portadas estão documentadas em `DETAILED_STEPS.md` com rationale de exclusão.
+Roteiro técnico completo (arquivos-fonte, pontos de integração, riscos) de cada item pendente está em `DETAILED_STEPS.md`.

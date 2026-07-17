@@ -207,6 +207,9 @@ class CrossPointSettings {
   // Set once an NTP sync succeeds. Used to skip re-syncing on every WiFi connect.
   // Resetting to 0 (e.g. via the web UI) forces a re-sync on next WiFi connect.
   uint8_t clockHasBeenSynced = 0;
+  // Clock mode: 0 = NTP sync (default), 1 = manual time entry
+  enum CLOCK_MODE { CLOCK_NTP = 0, CLOCK_MANUAL = 1, CLOCK_MODE_COUNT };
+  uint8_t clockMode = CLOCK_NTP;
   // Text rendering settings
   uint8_t extraParagraphSpacing = 1;
   uint8_t textAntiAliasing = 1;

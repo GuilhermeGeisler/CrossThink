@@ -13,7 +13,7 @@ GameScores GameScores::instance;
 
 bool GameScores::saveToFile() const {
   Storage.mkdir("/.crosspoint");
-  FsFile file;
+  HalFile file;
   if (!Storage.openFileForWrite("GSC", SCORES_FILE, file)) {
     LOG_ERR("GSC", "Failed to open game_scores.bin for write");
     return false;
@@ -29,7 +29,7 @@ bool GameScores::saveToFile() const {
 }
 
 bool GameScores::loadFromFile() {
-  FsFile file;
+  HalFile file;
   if (!Storage.openFileForRead("GSC", SCORES_FILE, file)) {
     return false;  // first boot — file doesn't exist yet
   }

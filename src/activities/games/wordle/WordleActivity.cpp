@@ -17,19 +17,27 @@
 
 int WordleActivity::getKbRowLength(int row) const {
   switch (row) {
-    case 0: return 10;  // QWERTYUIOP
-    case 1: return 9;   // ASDFGHJKL
-    case 2: return 8;   // Z X C V B N M DEL
-    default: return 0;
+    case 0:
+      return 10;  // QWERTYUIOP
+    case 1:
+      return 9;  // ASDFGHJKL
+    case 2:
+      return 8;  // Z X C V B N M DEL
+    default:
+      return 0;
   }
 }
 
 char WordleActivity::getKbChar(int row, int col) const {
   switch (row) {
-    case 0: return kbRow0[col];
-    case 1: return kbRow1[col];
-    case 2: return kbRow2[col];
-    default: return '\0';
+    case 0:
+      return kbRow0[col];
+    case 1:
+      return kbRow1[col];
+    case 2:
+      return kbRow2[col];
+    default:
+      return '\0';
   }
 }
 
@@ -480,12 +488,12 @@ void WordleActivity::drawGrid() {
           renderer.fillRect(x, y, tileSize, tileSize, true);  // Black fill for all revealed
           break;
         case TileState::Filled:
-          renderer.fillRect(x, y, tileSize, tileSize, false);  // White fill
+          renderer.fillRect(x, y, tileSize, tileSize, false);    // White fill
           renderer.drawRect(x, y, tileSize, tileSize, 2, true);  // Thick border
           break;
         case TileState::Empty:
         default:
-          renderer.fillRect(x, y, tileSize, tileSize, false);  // White fill
+          renderer.fillRect(x, y, tileSize, tileSize, false);    // White fill
           renderer.drawRect(x, y, tileSize, tileSize, 1, true);  // Thin border
           break;
       }
@@ -493,14 +501,14 @@ void WordleActivity::drawGrid() {
       // Draw letter
       if (hasLetter) {
         char text[2] = {letter, '\0'};
-        int textWidth = renderer.getTextWidth(BOOKERLY_16_FONT_ID, text);
+        int textWidth = renderer.getTextWidth(NOTOSERIF_16_FONT_ID, text);
         int textX = x + (tileSize - textWidth) / 2;
-        int textHeight = renderer.getLineHeight(BOOKERLY_16_FONT_ID);
-        bool revealed = (state == TileState::Correct || state == TileState::WrongPosition ||
-                         state == TileState::Absent);
+        int textHeight = renderer.getLineHeight(NOTOSERIF_16_FONT_ID);
+        bool revealed =
+            (state == TileState::Correct || state == TileState::WrongPosition || state == TileState::Absent);
         // Shift text up slightly on revealed tiles to leave room for indicator
         int textY = y + (tileSize - textHeight) / 2 - (revealed ? 4 : 0);
-        renderer.drawText(BOOKERLY_16_FONT_ID, textX, textY, text, !revealed);  // white on black, black on white
+        renderer.drawText(NOTOSERIF_16_FONT_ID, textX, textY, text, !revealed);  // white on black, black on white
       }
 
       // B&W state indicators drawn in white on the black tile background:
@@ -575,12 +583,12 @@ void WordleActivity::drawKeyboard() {
       // - Revealed (Correct/WrongPos/Absent): black fill
       // - Unknown: white fill + thin black border
       if (isSelected) {
-        renderer.fillRect(x, y, thisKeyWidth, keyHeight, false);   // White fill
+        renderer.fillRect(x, y, thisKeyWidth, keyHeight, false);    // White fill
         renderer.drawRect(x, y, thisKeyWidth, keyHeight, 3, true);  // Thick black border
       } else if (revealed) {
-        renderer.fillRect(x, y, thisKeyWidth, keyHeight, true);    // Black fill
+        renderer.fillRect(x, y, thisKeyWidth, keyHeight, true);  // Black fill
       } else {
-        renderer.fillRect(x, y, thisKeyWidth, keyHeight, false);   // White fill
+        renderer.fillRect(x, y, thisKeyWidth, keyHeight, false);    // White fill
         renderer.drawRect(x, y, thisKeyWidth, keyHeight, 1, true);  // Thin black border
       }
 
@@ -624,7 +632,7 @@ void WordleActivity::drawOverlay() {
     }
     const char* hint = "Press any key for new game";
 
-    const int titleH = renderer.getLineHeight(BOOKERLY_16_FONT_ID);
+    const int titleH = renderer.getLineHeight(NOTOSERIF_16_FONT_ID);
     const int hintH = renderer.getLineHeight(UI_12_FONT_ID);
     constexpr int pad = 18;
     constexpr int gap = 12;
@@ -636,8 +644,8 @@ void WordleActivity::drawOverlay() {
     renderer.fillRect(panelX, panelY, panelW, panelH, false);
     renderer.drawRect(panelX, panelY, panelW, panelH, 2, true);
 
-    int msgW = renderer.getTextWidth(BOOKERLY_16_FONT_ID, msg);
-    renderer.drawText(BOOKERLY_16_FONT_ID, panelX + (panelW - msgW) / 2, panelY + pad, msg, true);
+    int msgW = renderer.getTextWidth(NOTOSERIF_16_FONT_ID, msg);
+    renderer.drawText(NOTOSERIF_16_FONT_ID, panelX + (panelW - msgW) / 2, panelY + pad, msg, true);
 
     int hintW = renderer.getTextWidth(UI_12_FONT_ID, hint);
     renderer.drawText(UI_12_FONT_ID, panelX + (panelW - hintW) / 2, panelY + pad + titleH + gap, hint, true);
@@ -663,8 +671,8 @@ void WordleActivity::drawLegend() {
 
   // Title
   const char* title = "Wordle Guide";
-  int titleW = renderer.getTextWidth(BOOKERLY_16_FONT_ID, title);
-  renderer.drawText(BOOKERLY_16_FONT_ID, panelX + (panelW - titleW) / 2, panelY - 2, title, true);
+  int titleW = renderer.getTextWidth(NOTOSERIF_16_FONT_ID, title);
+  renderer.drawText(NOTOSERIF_16_FONT_ID, panelX + (panelW - titleW) / 2, panelY - 2, title, true);
   renderer.fillRect(panelX + 10, panelY + 38, panelW - 20, 1, true);  // separator
 
   // Four example rows: tile + description
@@ -692,7 +700,7 @@ void WordleActivity::drawLegend() {
   // Row 3: Absent (solid black)
   renderer.fillRect(exX, exY, exSize, exSize, true);
   renderer.drawText(UI_12_FONT_ID, descX, exY + (exSize - lineH) / 2, "Letter not in word", true);
-  exY += rowSpacing-15;
+  exY += rowSpacing - 15;
 
   // Row 4: Empty (white + border)
   renderer.fillRect(exX, exY, exSize, exSize, false);

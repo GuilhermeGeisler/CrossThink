@@ -7,8 +7,8 @@ class GameScores {
   static GameScores instance;
 
  public:
-  uint32_t best2048 = 0;     // 2048 best score
-  uint16_t mazeBest[3] = {}; // maze best moves per difficulty (0=Small,1=Med,2=Large)
+  uint32_t best2048 = 0;      // 2048 best score
+  uint16_t mazeBest[3] = {};  // maze best moves per difficulty (0=Small,1=Med,2=Large)
 
   static GameScores& getInstance() { return instance; }
 

@@ -31,7 +31,9 @@ bool SudokuActivity::fillGrid(int pos) {
   uint8_t order[SIZE] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
   for (int i = SIZE - 1; i > 0; i--) {
     int j = random(0, i + 1);
-    uint8_t tmp = order[i]; order[i] = order[j]; order[j] = tmp;
+    uint8_t tmp = order[i];
+    order[i] = order[j];
+    order[j] = tmp;
   }
 
   for (int i = 0; i < SIZE; i++) {
@@ -79,9 +81,12 @@ bool SudokuActivity::checkCompleted() const {
 
 const char* SudokuActivity::difficultyLabel() const {
   switch (difficulty) {
-    case Difficulty::EASY:   return tr(STR_SUDOKU_EASY);
-    case Difficulty::MEDIUM: return tr(STR_SUDOKU_MEDIUM);
-    case Difficulty::HARD:   return tr(STR_SUDOKU_HARD);
+    case Difficulty::EASY:
+      return tr(STR_SUDOKU_EASY);
+    case Difficulty::MEDIUM:
+      return tr(STR_SUDOKU_MEDIUM);
+    case Difficulty::HARD:
+      return tr(STR_SUDOKU_HARD);
   }
   return "";
 }

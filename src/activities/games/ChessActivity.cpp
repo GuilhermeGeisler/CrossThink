@@ -89,13 +89,20 @@ bool ChessActivity::hasLegalMoves(bool forWhite) const {
 // Returns material value for a piece (positive regardless of color)
 int ChessActivity::pieceValue(int8_t piece) const {
   switch (abs(piece)) {
-    case PAWN:   return 1;
-    case KNIGHT: return 3;
-    case BISHOP: return 3;
-    case ROOK:   return 5;
-    case QUEEN:  return 9;
-    case KING:   return 100;
-    default:     return 0;
+    case PAWN:
+      return 1;
+    case KNIGHT:
+      return 3;
+    case BISHOP:
+      return 3;
+    case ROOK:
+      return 5;
+    case QUEEN:
+      return 9;
+    case KING:
+      return 100;
+    default:
+      return 0;
   }
 }
 
@@ -119,13 +126,15 @@ int ChessActivity::evaluateBoard() const {
   int score = 0;
   for (int r = 0; r < BOARD; r++)
     for (int c = 0; c < BOARD; c++)
-      if (board[r][c] != EMPTY)
-        score += isBlack(board[r][c]) ? pieceValue(board[r][c]) : -pieceValue(board[r][c]);
+      if (board[r][c] != EMPTY) score += isBlack(board[r][c]) ? pieceValue(board[r][c]) : -pieceValue(board[r][c]);
   return score;
 }
 
 void ChessActivity::doAiMove() {
-  struct Move { int8_t fr, fc, tr, tc; int score; };
+  struct Move {
+    int8_t fr, fc, tr, tc;
+    int score;
+  };
   static constexpr int MAX_MOVES = 220;
   Move moves[MAX_MOVES];
   int count = 0;
@@ -138,7 +147,8 @@ void ChessActivity::doAiMove() {
         for (int tc = 0; tc < BOARD && count < MAX_MOVES; tc++) {
           if (isValidMove(r, c, tr, tc)) {
             int s = 0;
-            if (difficulty == Difficulty::MEDIUM) s = scoreMove(r, c, tr, tc);
+            if (difficulty == Difficulty::MEDIUM)
+              s = scoreMove(r, c, tr, tc);
             else if (difficulty == Difficulty::HARD) {
               // 1-ply minimax: apply move, evaluate, undo
               int8_t saved = board[tr][tc];
@@ -153,7 +163,11 @@ void ChessActivity::doAiMove() {
         }
     }
 
-  if (count == 0) { gameOver = true; whiteWins = true; return; }
+  if (count == 0) {
+    gameOver = true;
+    whiteWins = true;
+    return;
+  }
 
   randomSeed(millis());
   Move* chosen = nullptr;
@@ -163,7 +177,11 @@ void ChessActivity::doAiMove() {
     // Pick randomly among top 3 scored moves
     for (int i = 0; i < count - 1; i++)
       for (int j = i + 1; j < count; j++)
-        if (moves[j].score > moves[i].score) { Move tmp = moves[i]; moves[i] = moves[j]; moves[j] = tmp; }
+        if (moves[j].score > moves[i].score) {
+          Move tmp = moves[i];
+          moves[i] = moves[j];
+          moves[j] = tmp;
+        }
     int topN = count < 3 ? count : 3;
     chosen = &moves[random(0, topN)];
   } else {
@@ -174,7 +192,10 @@ void ChessActivity::doAiMove() {
   }
 
   auto& m = *chosen;
-  if (abs(board[m.tr][m.tc]) == KING) { gameOver = true; whiteWins = false; }
+  if (abs(board[m.tr][m.tc]) == KING) {
+    gameOver = true;
+    whiteWins = false;
+  }
   board[m.tr][m.tc] = board[m.fr][m.fc];
   board[m.fr][m.fc] = EMPTY;
   if (board[m.tr][m.tc] == -PAWN && m.tr == 7) board[m.tr][m.tc] = -QUEEN;
@@ -188,15 +209,24 @@ void ChessActivity::checkGameEnd() {
       if (board[r][c] == KING) whiteKing = true;
       if (board[r][c] == -KING) blackKing = true;
     }
-  if (!whiteKing) { gameOver = true; whiteWins = false; }
-  if (!blackKing) { gameOver = true; whiteWins = true; }
+  if (!whiteKing) {
+    gameOver = true;
+    whiteWins = false;
+  }
+  if (!blackKing) {
+    gameOver = true;
+    whiteWins = true;
+  }
 }
 
 const char* ChessActivity::difficultyLabel() const {
   switch (difficulty) {
-    case Difficulty::EASY:   return tr(STR_CARO_EASY);
-    case Difficulty::MEDIUM: return tr(STR_CARO_MEDIUM);
-    case Difficulty::HARD:   return tr(STR_CARO_HARD);
+    case Difficulty::EASY:
+      return tr(STR_CARO_EASY);
+    case Difficulty::MEDIUM:
+      return tr(STR_CARO_MEDIUM);
+    case Difficulty::HARD:
+      return tr(STR_CARO_HARD);
   }
   return "";
 }
@@ -216,9 +246,12 @@ void ChessActivity::initBoard() {
   board[7][3] = QUEEN;
   board[7][4] = KING;
   for (int c = 0; c < BOARD; c++) board[6][c] = PAWN;
-  cursorRow = 6; cursorCol = 4;
+  cursorRow = 6;
+  cursorCol = 4;
   selRow = selCol = -1;
-  whiteTurn = true; gameOver = false; whiteWins = false;
+  whiteTurn = true;
+  gameOver = false;
+  whiteWins = false;
 }
 
 void ChessActivity::onEnter() {
@@ -226,7 +259,7 @@ void ChessActivity::onEnter() {
   // Save and force portrait so the 8×48=384px board fits vertically on the 540×960 screen.
   savedOrientation = renderer.getOrientation();
   renderer.setOrientation(GfxRenderer::Orientation::Portrait);
-  renderer.requestNextHalfRefresh();
+  renderer.displayBuffer(HalDisplay::HALF_REFRESH);
   showingDifficultySelect = true;
   requestUpdate();
 }
@@ -235,7 +268,7 @@ void ChessActivity::onExit() {
   Activity::onExit();
   // Restore orientation so the next activity (reader) starts clean
   renderer.setOrientation(savedOrientation);
-  renderer.requestNextHalfRefresh();
+  renderer.displayBuffer(HalDisplay::HALF_REFRESH);
 }
 
 void ChessActivity::loop() {
@@ -332,8 +365,7 @@ void ChessActivity::loop() {
         board[cursorRow][cursorCol] = board[selRow][selCol];
         board[selRow][selCol] = EMPTY;
         // Auto-promote white pawn to queen
-        if (board[cursorRow][cursorCol] == PAWN && cursorRow == 0)
-          board[cursorRow][cursorCol] = QUEEN;
+        if (board[cursorRow][cursorCol] == PAWN && cursorRow == 0) board[cursorRow][cursorCol] = QUEEN;
         selRow = selCol = -1;
         whiteTurn = false;
         changed = true;
@@ -437,7 +469,7 @@ void ChessActivity::render(RenderLock&&) {
             renderer.drawImage(sprite, cx, cy, CELL, CELL);
           } else {
             // Transparent draw preserves board background (dithered dark squares)
-            renderer.drawImageTransparent(sprite, cx, cy, CELL, CELL);
+            renderer.drawImage(sprite, cx, cy, CELL, CELL);
           }
         }
       }

@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "../Activity.h"
+#include "activities/Activity.h"
 #include "util/ButtonNavigator.h"
 
 class WordleActivity final : public Activity {
@@ -21,7 +21,8 @@ class WordleActivity final : public Activity {
   static constexpr const char* NONWORDLES_PATH = "/wordle/nonwordles.json";
   // Update these URLs to point to your hosted JSON word list files
   static constexpr const char* WORDLES_URL = "https://raw.githubusercontent.com/stuartpb/wordles/main/wordles.json";
-  static constexpr const char* NONWORDLES_URL = "https://raw.githubusercontent.com/stuartpb/wordles/main/nonwordles.json";
+  static constexpr const char* NONWORDLES_URL =
+      "https://raw.githubusercontent.com/stuartpb/wordles/main/nonwordles.json";
   static constexpr int WORD_LENGTH = 5;
   static constexpr int MAX_GUESSES = 6;
 
@@ -50,7 +51,7 @@ class WordleActivity final : public Activity {
   // Keyboard layout
   static constexpr int KB_ROWS = 3;
   static constexpr const char* kbRow0 = "QWERTYUIOP";   // 10 keys
-  static constexpr const char* kbRow1 = "ASDFGHJKL";     // 9 keys
+  static constexpr const char* kbRow1 = "ASDFGHJKL";    // 9 keys
   static constexpr const char* kbRow2 = "ZXCVBNM\x02";  // 7 letters + DEL = 8 positions
   static constexpr char KEY_DELETE = '\x02';
 

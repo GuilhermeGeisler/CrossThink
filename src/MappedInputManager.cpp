@@ -55,15 +55,13 @@ bool MappedInputManager::mapButton(const Button button, bool (HalGPIO::*fn)(uint
       // In PortraitInverted, device is flipped so physical up/down are reversed — swap accordingly.
       return (gpio.*fn)(invertedOrientation ? side.pageBack : side.pageForward);
     case Button::FrontPageBack:
-      // Front page navigation uses Left/Right buttons and can be swapped via settings.
-      return SETTINGS.frontPageButtonLayout == CrossPointSettings::FRONT_LEFT_PREV
-                 ? (gpio.*fn)(SETTINGS.frontButtonLeft)
-                 : (gpio.*fn)(SETTINGS.frontButtonRight);
+      return (gpio.*fn)(SETTINGS.frontButtonLeft);
     case Button::FrontPageForward:
-      // Front page navigation uses Left/Right buttons and can be swapped via settings.
-      return SETTINGS.frontPageButtonLayout == CrossPointSettings::FRONT_LEFT_PREV
-                 ? (gpio.*fn)(SETTINGS.frontButtonRight)
-                 : (gpio.*fn)(SETTINGS.frontButtonLeft);
+      return (gpio.*fn)(SETTINGS.frontButtonRight);
+    case Button::NavNext:
+      return (gpio.*fn)(invertedOrientation ? side.pageBack : side.pageForward);
+    case Button::NavPrevious:
+      return (gpio.*fn)(invertedOrientation ? side.pageForward : side.pageBack);
   }
 
   return false;
@@ -128,4 +126,8 @@ int MappedInputManager::getPressedFrontButton() const {
     return HalGPIO::BTN_RIGHT;
   }
   return -1;
+}
+
+bool MappedInputManager::isNavDirectionSwapped() const {
+  return SETTINGS.orientation == CrossPointSettings::ORIENTATION::INVERTED;
 }
