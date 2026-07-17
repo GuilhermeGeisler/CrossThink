@@ -469,7 +469,7 @@ void ChessActivity::render(RenderLock&&) {
             renderer.drawImage(sprite, cx, cy, CELL, CELL);
           } else {
             // Transparent draw preserves board background (dithered dark squares)
-            renderer.drawImage(sprite, cx, cy, CELL, CELL);
+            renderer.drawImageTransparent(sprite, cx, cy, CELL, CELL);
           }
         }
       }

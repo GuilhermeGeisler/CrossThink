@@ -66,14 +66,14 @@ int getLunarMonth11(int yy, double timeZone) {
 // Get leap month offset for a year
 int getLeapMonthOffset(int a11, double timeZone) {
   int k = static_cast<int>(floor(0.5 + (a11 - 2415021.076998695) / 29.530588853));
-  int nm = a11;
+  int last = 0;
   int i = 1;
-  int sunLong = static_cast<int>(sunLongitude(static_cast<double>(nm)));
+  int arc = static_cast<int>(sunLongitude(static_cast<double>(newMoonDay(k + i, timeZone))));
   do {
-    nm = newMoonDay(k + i, timeZone);
+    last = arc;
     i++;
-    sunLong = static_cast<int>(sunLongitude(static_cast<double>(nm)));
-  } while (sunLong != sunLong);  // This simplification works for most cases
+    arc = static_cast<int>(sunLongitude(static_cast<double>(newMoonDay(k + i, timeZone))));
+  } while (arc != last && i < 14);
   return i - 1;
 }
 
