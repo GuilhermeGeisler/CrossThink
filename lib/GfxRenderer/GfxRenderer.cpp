@@ -660,6 +660,30 @@ void GfxRenderer::drawRoundedRect(const int x, const int y, const int width, con
   }
 }
 
+void GfxRenderer::roundCoverCorners(const int x, const int y, const int width, const int height,
+                                    const int cornerRadius, const Color background) const {
+  if (width <= 0 || height <= 0) return;
+  const int r = std::min({cornerRadius, width / 2, height / 2});
+  if (r > 0) {
+    const int rSq = r * r;
+    const int leftCx = x + r;
+    const int topCy = y + r;
+    const int rightCx = x + width - 1 - r;
+    const int bottomCy = y + height - 1 - r;
+    const bool paintBlack = (background == Black);
+    for (int dy = 0; dy <= r; ++dy) {
+      for (int dx = 0; dx <= r; ++dx) {
+        if (dx * dx + dy * dy <= rSq) continue;
+        drawPixel(leftCx - dx, topCy - dy, paintBlack);
+        drawPixel(rightCx + dx, topCy - dy, paintBlack);
+        drawPixel(leftCx - dx, bottomCy + dy, paintBlack);
+        drawPixel(rightCx + dx, bottomCy + dy, paintBlack);
+      }
+    }
+  }
+  drawRoundedRect(x, y, width, height, 1, cornerRadius, true);
+}
+
 void GfxRenderer::fillRect(const int x, const int y, const int width, const int height, const bool state) const {
   if (state) {
     fillRectImpl<Color::Black>(x, y, width, height);
@@ -1266,6 +1290,61 @@ void GfxRenderer::drawBitmap1Bit(const Bitmap& bitmap, const int x, const int y,
         drawPixel(screenX, screenY, true);
       }
       // White pixels (val == 3) are not drawn (leave background)
+    }
+  }
+
+  free(outputRow);
+  free(rowBytes);
+}
+
+void GfxRenderer::drawBitmapStretched1Bit(const Bitmap& bitmap, const int x, const int y, const int width,
+                                          const int height) const {
+  if (width <= 0 || height <= 0) return;
+  const int bmpW = bitmap.getWidth();
+  const int bmpH = bitmap.getHeight();
+  if (bmpW <= 0 || bmpH <= 0) return;
+
+  const float xScale = static_cast<float>(width) / static_cast<float>(bmpW);
+  const float yScale = static_cast<float>(height) / static_cast<float>(bmpH);
+
+  const int outputRowSize = (bmpW + 3) / 4;
+  auto* outputRow = static_cast<uint8_t*>(malloc(outputRowSize));
+  auto* rowBytes = static_cast<uint8_t*>(malloc(bitmap.getRowBytes()));
+  if (!outputRow || !rowBytes) {
+    LOG_ERR("GFX", "!! Failed to allocate stretched 1-bit BMP row buffers");
+    free(outputRow);
+    free(rowBytes);
+    return;
+  }
+
+  for (int bmpY = 0; bmpY < bmpH; ++bmpY) {
+    if (bitmap.readNextRow(outputRow, rowBytes) != BmpReaderError::Ok) {
+      LOG_ERR("GFX", "Failed to read row %d from stretched 1-bit bitmap", bmpY);
+      free(outputRow);
+      free(rowBytes);
+      return;
+    }
+
+    const int bmpYOffset = bitmap.isTopDown() ? bmpY : bmpH - 1 - bmpY;
+    const int sy0 = y + static_cast<int>(std::floor(bmpYOffset * yScale));
+    const int sy1 = y + static_cast<int>(std::floor((bmpYOffset + 1) * yScale));
+    if (sy1 <= sy0) continue;
+    if (sy0 >= getScreenHeight()) continue;
+
+    for (int bmpX = 0; bmpX < bmpW; ++bmpX) {
+      const uint8_t val = outputRow[bmpX / 4] >> (6 - ((bmpX * 2) % 8)) & 0x3;
+      if (val >= 3) continue;
+
+      const int sx0 = x + static_cast<int>(std::floor(bmpX * xScale));
+      const int sx1 = x + static_cast<int>(std::floor((bmpX + 1) * xScale));
+      if (sx1 <= sx0) continue;
+      if (sx0 >= getScreenWidth()) break;
+
+      for (int sy = std::max(0, sy0); sy < sy1 && sy < getScreenHeight(); ++sy) {
+        for (int sx = std::max(0, sx0); sx < sx1 && sx < getScreenWidth(); ++sx) {
+          drawPixel(sx, sy, true);
+        }
+      }
     }
   }
 

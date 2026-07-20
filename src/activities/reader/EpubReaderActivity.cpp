@@ -41,6 +41,7 @@
 #include "util/BookmarkUtil.h"
 #include "util/Dictionary.h"
 #include "util/ScreenshotUtil.h"
+#include "stats/ReadingStatsManager.h"
 
 namespace {
 // pagesPerRefresh now comes from SETTINGS.getRefreshFrequency()
@@ -202,6 +203,14 @@ void EpubReaderActivity::onEnter() {
   APP_STATE.saveToFile();
   RECENT_BOOKS.addBook(epub->getPath(), epub->getTitle(), epub->getAuthor(), epub->getThumbBmpPath());
 
+  // Start reading stats session
+  const float chapterProgress = cachedChapterTotalPageCount > 0
+                                    ? static_cast<float>(nextPageNumber) / static_cast<float>(cachedChapterTotalPageCount)
+                                    : 0.0f;
+  StatsManager.beginSession(epub->getCachePath().c_str(), epub->getTitle().c_str(), epub->getAuthor().c_str(),
+                            epub->getPath().c_str(), epub->getThumbBmpPath().c_str(),
+                            static_cast<uint8_t>(epub->calculateProgress(currentSpineIndex, chapterProgress) * 100.0f));
+
   loadCachedBookmarks();
 
   // Trigger first update
@@ -209,6 +218,15 @@ void EpubReaderActivity::onEnter() {
 }
 
 void EpubReaderActivity::onExit() {
+  // End reading stats session before Activity::onExit
+  if (epub && section) {
+    const uint8_t prog = static_cast<uint8_t>(
+        epub->calculateProgress(currentSpineIndex, static_cast<float>(section->currentPage) /
+                                                       static_cast<float>(std::max(1, static_cast<int>(section->pageCount)))) *
+        100.0f);
+    StatsManager.endSession(prog, sessionPagesTurned);
+  }
+
   Activity::onExit();
 
   // Reset orientation back to portrait for the rest of the UI
@@ -889,6 +907,7 @@ void EpubReaderActivity::pageTurn(bool isForwardTurn) {
       }
     }
   }
+  sessionPagesTurned++;
   lastPageTurnTime = millis();
   requestUpdate();
 }

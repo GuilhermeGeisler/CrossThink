@@ -12,6 +12,7 @@
 #include "../games/SudokuActivity.h"
 #include "../games/TwentyFortyEightActivity.h"
 #include "../games/wordle/WordleActivity.h"
+#include "../stats/StatsActivity.h"
 #include "CrossPetSettings.h"
 #include "CrossPointSettings.h"
 #include "components/UITheme.h"
@@ -65,8 +66,11 @@ void ToolsActivity::buildMenu() {
         {StrId::STR_2048,
          [this] { activityManager.pushActivity(std::make_unique<TwentyFortyEightActivity>(renderer, mappedInput)); }});
     menuEntries.push_back({StrId::STR_WORDLE, [this] {
-                             activityManager.pushActivity(std::make_unique<WordleActivity>(renderer, mappedInput));
-                           }});
+                              activityManager.pushActivity(std::make_unique<WordleActivity>(renderer, mappedInput));
+                            }});
+    menuEntries.push_back({StrId::STR_READING_STATS, [this] {
+                              activityManager.pushActivity(std::make_unique<StatsActivity>(renderer, mappedInput));
+                            }});
   }
 }
 
