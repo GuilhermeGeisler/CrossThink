@@ -14,6 +14,12 @@ constexpr unsigned long SKIP_HOLD_MS = 700;
 constexpr unsigned long BOOKMARK_HOLD_MS = 400;
 constexpr unsigned long BOOKMARK_MESSAGE_DURATION_MS = 2500;
 
+inline bool readerDarkModeEnabled() { return false; }
+
+inline uint8_t readerBackgroundColor() { return 0xFF; }
+
+inline bool readerForegroundBlack() { return true; }
+
 inline void applyOrientation(GfxRenderer& renderer, const uint8_t orientation) {
   switch (orientation) {
     case CrossPointSettings::ORIENTATION::PORTRAIT:

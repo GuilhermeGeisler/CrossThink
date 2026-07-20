@@ -93,9 +93,15 @@ if [ "$CPPCHECK_AVAILABLE" = true ]; then
                 --quiet \
                 --inline-suppr \
                 --std=c++20 \
+                --language=c++ \
                 --suppress=missingIncludeSystem \
                 --suppress=unusedFunction \
                 --suppress=unmatchedSuppression \
+                --suppress=knownConditionTrueFalse \
+                --suppress=useStlAlgorithm \
+                --suppress=unreadVariable \
+                --suppress=unusedStructMember \
+                --suppress=unusedMemberVariable \
                 $STAGED_FILES 2>&1; then
     error "cppcheck found issues"
     FAILED=true

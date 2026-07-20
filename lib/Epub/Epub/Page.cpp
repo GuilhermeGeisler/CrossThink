@@ -110,6 +110,11 @@ void Page::render(GfxRenderer& renderer, const int fontId, const int xOffset, co
   renderFilteredPageElements(elements, renderer, fontId, xOffset, yOffset, [](const PageElement&) { return true; });
 }
 
+void Page::renderText(GfxRenderer& renderer, const int fontId, const int xOffset, const int yOffset) const {
+  renderFilteredPageElements(elements, renderer, fontId, xOffset, yOffset,
+                             [](const PageElement& element) { return element.getTag() != TAG_PageImage; });
+}
+
 void Page::renderImages(GfxRenderer& renderer, const int fontId, const int xOffset, const int yOffset) const {
   renderFilteredPageElements(elements, renderer, fontId, xOffset, yOffset,
                              [](const PageElement& element) { return element.getTag() == TAG_PageImage; });

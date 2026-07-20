@@ -20,6 +20,9 @@
 #include "BookmarkEntry.h"
 #include "CrossPointSettings.h"
 #include "CrossPointState.h"
+#include "DictionaryDefinitionActivity.h"
+#include "DictionaryIndexBuildActivity.h"
+#include "DictionaryWordSelectActivity.h"
 #include "EpubReaderBookmarksActivity.h"
 #include "EpubReaderChapterSelectionActivity.h"
 #include "EpubReaderFootnotesActivity.h"
@@ -32,9 +35,11 @@
 #include "QrDisplayActivity.h"
 #include "ReaderUtils.h"
 #include "RecentBooksStore.h"
+#include "activities/util/ConfirmationActivity.h"
 #include "components/UITheme.h"
 #include "fontIds.h"
 #include "util/BookmarkUtil.h"
+#include "util/Dictionary.h"
 #include "util/ScreenshotUtil.h"
 
 namespace {
@@ -313,18 +318,19 @@ void EpubReaderActivity::loop() {
         bookProgress = epub->calculateProgress(currentSpineIndex, chapterProgress) * 100.0f;
       }
       const int bookProgressPercent = clampPercent(static_cast<int>(bookProgress + 0.5f));
-      startActivityForResult(std::make_unique<EpubReaderMenuActivity>(
-                                 renderer, mappedInput, epub->getTitle(), currentPage, totalPages, bookProgressPercent,
-                                 SETTINGS.orientation, !currentPageFootnotes.empty(), !cachedBookmarks.empty()),
-                             [this](const ActivityResult& result) {
-                               // Always apply orientation change even if the menu was cancelled
-                               const auto& menu = std::get<MenuResult>(result.data);
-                               applyOrientation(menu.orientation);
-                               toggleAutoPageTurn(menu.pageTurnOption);
-                               if (!result.isCancelled) {
-                                 onReaderMenuConfirm(static_cast<EpubReaderMenuActivity::MenuAction>(menu.action));
-                               }
-                             });
+      startActivityForResult(
+          std::make_unique<EpubReaderMenuActivity>(
+              renderer, mappedInput, epub->getTitle(), currentPage, totalPages, bookProgressPercent,
+              SETTINGS.orientation, !currentPageFootnotes.empty(), !cachedBookmarks.empty(), Dictionary::exists()),
+          [this](const ActivityResult& result) {
+            // Always apply orientation change even if the menu was cancelled
+            const auto& menu = std::get<MenuResult>(result.data);
+            applyOrientation(menu.orientation);
+            toggleAutoPageTurn(menu.pageTurnOption);
+            if (!result.isCancelled) {
+              onReaderMenuConfirm(static_cast<EpubReaderMenuActivity::MenuAction>(menu.action));
+            }
+          });
     }
   }
 
@@ -631,6 +637,105 @@ void EpubReaderActivity::onReaderMenuConfirm(EpubReaderMenuActivity::MenuAction 
       }
       onGoHome();
       return;
+    }
+    case EpubReaderMenuActivity::MenuAction::LOOKUP: {
+      if (!Dictionary::exists()) {
+        startActivityForResult(std::make_unique<ConfirmationActivity>(
+                                   renderer, mappedInput, tr(STR_DICT_NOT_FOUND_TITLE), tr(STR_DICT_NOT_FOUND_BODY)),
+                               [this](const ActivityResult& /*result*/) { requestUpdate(); });
+        break;
+      }
+
+      // First-layer heap guard: reject lookup before loading the page (which itself allocates).
+      // Second layer lives in DictionaryWordSelectActivity::extractWords() with a tighter threshold.
+      constexpr uint32_t LOOKUP_MIN_MAX_ALLOC = 8000;
+      if (ESP.getMaxAllocHeap() < LOOKUP_MIN_MAX_ALLOC) {
+        LOG_INF("ERS", "Lookup pre-flight: maxAlloc=%u below %u, aborting", ESP.getMaxAllocHeap(),
+                LOOKUP_MIN_MAX_ALLOC);
+        startActivityForResult(
+            std::make_unique<ConfirmationActivity>(renderer, mappedInput, tr(STR_LOW_MEMORY_LOOKUP_TITLE),
+                                                   tr(STR_LOW_MEMORY_LOOKUP_BODY)),
+            [this](const ActivityResult& /*result*/) { requestUpdate(); });
+        break;
+      }
+
+      std::unique_ptr<Page> pageForLookup;
+      std::string nextPageFirstWord;
+      int orientedMarginTop = 0;
+      int orientedMarginLeft = 0;
+      {
+        RenderLock lock(*this);
+        if (!section) {
+          requestUpdate();
+          break;
+        }
+        int orientedMarginRight;
+        int orientedMarginBottom;
+        renderer.getOrientedViewableTRBL(&orientedMarginTop, &orientedMarginRight, &orientedMarginBottom,
+                                         &orientedMarginLeft);
+        orientedMarginTop += SETTINGS.screenMargin;
+        orientedMarginLeft += SETTINGS.screenMargin;
+        orientedMarginRight += SETTINGS.screenMargin;
+        orientedMarginBottom += SETTINGS.screenMargin;
+        pageForLookup = section->loadPageFromSectionFile();
+        if (section->currentPage < section->pageCount - 1) {
+          const int savedPage = section->currentPage;
+          section->currentPage = savedPage + 1;
+          auto nextPage = section->loadPageFromSectionFile();
+          section->currentPage = savedPage;
+          if (nextPage) {
+            for (const auto& element : nextPage->elements) {
+              if (!element || element->getTag() != TAG_PageLine) continue;
+              const auto& line = static_cast<const PageLine&>(*element);
+              auto block = line.getBlock();
+              if (!block) continue;
+              const auto& words = block->getWords();
+              if (!words.empty()) {
+                nextPageFirstWord = words.front();
+                break;
+              }
+            }
+          }
+        }
+      }
+      if (!pageForLookup) break;
+
+      const int readerFontId = SETTINGS.getReaderFontId();
+      const auto orientation = SETTINGS.orientation;
+      const auto cachePath = epub->getCachePath();
+      auto pageShared = std::make_shared<std::unique_ptr<Page>>(std::move(pageForLookup));
+      auto launchWordSelect = [this, pageShared, readerFontId, orientedMarginLeft, orientedMarginTop, cachePath,
+                               orientation, nextPageFirstWord]() {
+        startActivityForResult(std::make_unique<DictionaryWordSelectActivity>(
+                                   renderer, mappedInput, std::move(*pageShared), readerFontId, orientedMarginLeft,
+                                   orientedMarginTop, cachePath, orientation, nextPageFirstWord),
+                               [this](const ActivityResult& /*result*/) { requestUpdate(); });
+      };
+
+      if (Dictionary::isIndexReady()) {
+        launchWordSelect();
+      } else if (Dictionary::loadCachedIndex()) {
+        launchWordSelect();
+      } else {
+        startActivityForResult(
+            std::make_unique<ConfirmationActivity>(renderer, mappedInput, tr(STR_DICT_INDEX_PROMPT_TITLE),
+                                                   tr(STR_DICT_INDEX_PROMPT_BODY)),
+            [this, launchWordSelect](const ActivityResult& promptResult) {
+              if (promptResult.isCancelled) {
+                requestUpdate();
+                return;
+              }
+              startActivityForResult(std::make_unique<DictionaryIndexBuildActivity>(renderer, mappedInput),
+                                     [this, launchWordSelect](const ActivityResult& buildResult) {
+                                       if (buildResult.isCancelled) {
+                                         requestUpdate();
+                                         return;
+                                       }
+                                       launchWordSelect();
+                                     });
+            });
+      }
+      break;
     }
     case EpubReaderMenuActivity::MenuAction::SCREENSHOT: {
       {
