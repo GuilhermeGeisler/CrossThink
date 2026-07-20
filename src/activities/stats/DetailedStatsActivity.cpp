@@ -59,6 +59,7 @@ void DetailedStatsActivity::render(RenderLock&& lock) {
 }
 
 void DetailedStatsActivity::renderDetailedGrid() const {
+  if (_bookIndex >= StatsManager.getBookCount()) return;
   const auto& book = StatsManager.getBook(_bookIndex);
   const auto& global = StatsManager.getGlobal();
   char buf[48];

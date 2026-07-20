@@ -608,7 +608,7 @@ static constexpr PetVisual kPetVisuals[stats::kPetStageCount] = {
     {StrId::STR_PET_DRAGON_JUVENILE, &kDragonJuv},  {StrId::STR_PET_DRAGON_ADULT, &kDragonAdult},
     {StrId::STR_PET_DRAGON_ELDER, &kDragonElder}};
 
-void StatsActivity::renderPet(int panelY, int panelH, int screenW) const {
+void StatsActivity::renderPet(int panelY, int panelH, int screenW) {
   const auto& global = StatsManager.getGlobal();
   const auto& metrics = UITheme::getInstance().getMetrics();
   const int pad = metrics.contentSidePadding;

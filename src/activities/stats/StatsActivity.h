@@ -18,7 +18,7 @@ class StatsActivity final : public Activity {
   void renderBookPanel(int panelY, int panelH, int screenW) const;
   void renderBookRow(int rowX, int rowY, int rowW, int rowH, const BookStatEntry& book, bool selected) const;
   void renderBadges(int panelY, int panelH, int screenW) const;
-  void renderPet(int panelY, int panelH, int screenW) const;
+  void renderPet(int panelY, int panelH, int screenW);
   void renderCalendar(int panelY, int panelH, int screenW) const;
   void renderWrapped(int panelY, int panelH, int screenW) const;
   void drawCoverPlaceholder(int x, int y, int w, int h, const char* title) const;
