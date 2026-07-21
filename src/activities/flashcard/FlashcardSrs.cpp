@@ -7,9 +7,18 @@
 #include <cstring>
 #include <ctime>
 
+#ifndef SIMULATOR
 // ESP-IDF provides getLocalTime()
 #include <esp_sntp.h>
 extern "C" bool getLocalTime(struct tm* info, uint32_t ms = 5000);
+#else
+inline bool getLocalTime(struct tm* info, uint32_t /*ms*/ = 5000) {
+  time_t now = time(nullptr);
+  if (now < 0) return false;
+  gmtime_r(&now, info);
+  return true;
+}
+#endif
 
 namespace {
 
@@ -34,15 +43,15 @@ uint32_t tmToDays(const struct tm& t) {
   tmp.tm_hour = 12;
   tmp.tm_min = 0;
   tmp.tm_sec = 0;
-  time_t unix = mktime(&tmp);
-  if (unix < EPOCH_2000) return 0;
-  return static_cast<uint32_t>((unix - EPOCH_2000) / 86400UL);
+  time_t epoch = mktime(&tmp);
+  if (epoch < EPOCH_2000) return 0;
+  return static_cast<uint32_t>((epoch - EPOCH_2000) / 86400UL);
 }
 
 struct tm daysToTm(uint32_t days) {
-  time_t unix = EPOCH_2000 + (time_t)days * 86400L;
+  time_t epoch = EPOCH_2000 + (time_t)days * 86400L;
   struct tm result = {};
-  gmtime_r(&unix, &result);
+  gmtime_r(&epoch, &result);
   return result;
 }
 
